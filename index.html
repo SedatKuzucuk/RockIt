@@ -541,17 +541,8 @@ async function resolveRound(data) {
       const winnerCount = counts[classicWinner];
       const loserCount = counts[loserSym];
 
-      if (winnerCount > loserCount) {
-        // Klasik kazanan aynı zamanda sayıca da fazla → kazanır
-        winnerSymbol = classicWinner;
-      } else if (winnerCount === loserCount) {
-        // Sayılar eşit → berabere
-        isDraw = true;
-      } else {
-        // Sayıca az olan klasik kazanan → kaybedenlerin sayısı fazla ama kural gereği yeniliyorlar
-        // Klasik kural her zaman geçerli, sayı fark etmez → klasik kazanan kazanır
-        winnerSymbol = classicWinner;
-      }
+      // Klasik kural her zaman geçerli, sayı fark etmez
+      winnerSymbol = classicWinner;
     }
   }
 
