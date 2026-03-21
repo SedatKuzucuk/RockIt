@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>RockIt!</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: #1a1a2e;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: white;
+    gap: 16px;
+  }
+  h1 { font-size: 1.6rem; font-weight: 900; text-align: center; }
+  .subtitle { font-size: 0.8rem; color: #a0aec0; text-align: center; margin-top: -10px; }
+
+  .screen { display: none; flex-direction: column; align-items: center; gap: 16px; width: 100%; max-width: 380px; }
+  .screen.active { display: flex; }
+
+  .card {
+    background: #16213e;
+    border-radius: 24px;
+    padding: 28px 24px;
+    width: 100%;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    text-align: center;
+  }
+  .card h2 { font-size: 1.2rem; font-weight: 900; margin-bottom: 10px; }
+  .card p { font-size: 0.85rem; color: #a0aec0; line-height: 1.6; margin-bottom: 16px; }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 14px 18px;
+    border-radius: 14px;
+    border: 2px solid #0f3460;
+    background: #0f3460;
+    color: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    outline: none;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  input[type="text"]::placeholder { color: #4a5568; }
+  input[type="text"]:focus { border-color: #667eea; }
+
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 14px;
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 900;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+  .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
+  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-ghost { background: none; border: 2px solid #4a5568; color: #a0aec0; margin-top: 8px; }
+  .btn-ghost:hover { border-color: #f56565; color: #f56565; }
+
+  .avatar-label { font-size: 0.75rem; color: #a0aec0; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; text-align: left; width: 100%; }
+  .avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    width: 100%;
+    margin-bottom: 14px;
+  }
+  .avatar-btn {
+    aspect-ratio: 1;
+    border-radius: 14px;
+    border: 2px solid transparent;
+    background: #0f3460;
+    font-size: 1.7rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .avatar-btn:hover { transform: translateY(-3px); border-color: #667eea; }
+  .avatar-btn.selected { border-color: #ffd700; background: #2d3a6a; transform: scale(1.08); box-shadow: 0 0 0 3px rgba(255,215,0,0.25); }
+
+  .room-code {
+    font-size: 2.5rem;
+    font-weight: 900;
+    letter-spacing: 8px;
+    color: #667eea;
+    margin: 10px 0;
+  }
+
+  .players-list { width: 100%; }
+  .player-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    background: #0f3460;
+    margin-bottom: 8px;
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
+  .player-dot { width: 10px; height: 10px; border-radius: 50%; background: #68d391; flex-shrink: 0; }
+  .player-dot.waiting { background: #4a5568; }
+
+  .game-choices {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    width: 100%;
+    margin: 8px 0;
+  }
+  .game-btn {
+    flex: 1;
+    aspect-ratio: 1;
+    border-radius: 20px;
+    border: 3px solid transparent;
+    background: #0f3460;
+    font-size: 2.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100px;
+  }
+  .game-btn:hover { transform: translateY(-5px); border-color: #667eea; background: #16213e; }
+  .game-btn:active { transform: scale(0.95); }
+  .game-btn.selected { border-color: #ffd700; background: #2d3a6a; transform: scale(1.08); }
+
+  .waiting-dots { display: flex; gap: 6px; justify-content: center; margin: 10px 0; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #667eea; animation: pulse 1.2s infinite; }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse { 0%,80%,100% { opacity: 0.3; transform: scale(0.8); } 40% { opacity: 1; transform: scale(1); } }
+
+  .result-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 12px 0;
+    flex-wrap: wrap;
+  }
+  .result-player { text-align: center; min-width: 70px; }
+  .result-player .pavatar { font-size: 2rem; }
+  .result-player .pname { font-size: 0.65rem; color: #a0aec0; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin: 2px 0; }
+  .result-player .pchoice { font-size: 2rem; }
+  .result-vs { color: #4a5568; font-weight: 900; align-self: center; font-size: 0.8rem; }
+
+  .result-title { font-size: 1.5rem; font-weight: 900; margin: 10px 0 6px; }
+  .result-title.win { color: #ffd700; }
+  .result-title.draw { color: #ed8936; }
+  .result-title.lose { color: #f56565; }
+
+  .scoreboard {
+    display: flex;
+    background: #16213e;
+    border-radius: 20px;
+    overflow: hidden;
+    width: 100%;
+    max-width: 380px;
+  }
+  .score-item { flex: 1; text-align: center; padding: 10px 6px; border-right: 1px solid #0f3460; }
+  .score-item:last-child { border-right: none; }
+  .score-avatar { font-size: 1.1rem; }
+  .score-label { font-size: 0.55rem; color: #a0aec0; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .score-value { font-size: 1.5rem; font-weight: 900; color: #667eea; }
+
+  .badge {
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 50px;
+    font-weight: 900;
+    font-size: 0.95rem;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    margin-bottom: 4px;
+  }
+  .error-msg { color: #f56565; font-size: 0.8rem; margin-bottom: 8px; min-height: 18px; }
+</style>
+</head>
+<body>
+
+<h1>🪨 RockIt!</h1>
+<p class="subtitle">Çok Oyunculu — Gerçek Zamanlı</p>
+
+<div class="scoreboard" id="scoreboard" style="display:none"></div>
+
+<!-- SCREEN: Giriş -->
+<div class="screen active" id="screen-join">
+  <div class="card">
+    <h2>👋 Hoş Geldin!</h2>
+    <p>İsmini ve avatarını seç, sonra odaya gir!</p>
+    <input type="text" id="input-name" placeholder="İsmin" maxlength="16" />
+    <div class="avatar-label">Avatarını Seç</div>
+    <div class="avatar-grid" id="avatar-grid"></div>
+    <input type="text" id="input-room" placeholder="Oda Kodu (boş = yeni oda)" maxlength="15" style="text-transform:uppercase" />
+    <div class="error-msg" id="join-error"></div>
+    <button class="btn btn-primary" onclick="joinGame()">Oyuna Gir →</button>
+  </div>
+</div>
+
+<!-- SCREEN: Oda bekleme -->
+<div class="screen" id="screen-lobby">
+  <div class="card">
+    <p style="font-size:0.75rem;color:#a0aec0;margin-bottom:4px;">ODA KODU</p>
+    <div class="room-code" id="lobby-code">----</div>
+    <p>Bu kodu arkadaşlarına gönder!<br>Maksimum 3 oyuncu.</p>
+    <div class="players-list" id="lobby-players"></div>
+    <button class="btn btn-primary" id="btn-start" onclick="startGame()" disabled>Oyunu Başlat</button>
+    <button class="btn btn-ghost" onclick="leaveGame()">Ayrıl</button>
+  </div>
+</div>
+
+<!-- SCREEN: Seçim -->
+<div class="screen" id="screen-pick">
+  <div class="card">
+    <div class="badge" id="pick-badge">🎮 Senin Sıran!</div>
+    <h2 style="margin-top:8px">Seçimini Yap!</h2>
+    <p>Kimse görmeden seç 🙈</p>
+    <div class="game-choices">
+      <button class="game-btn" id="gbtn-tas" onclick="submitChoice('tas')" title="Taş">✊</button>
+      <button class="game-btn" id="gbtn-kagit" onclick="submitChoice('kagit')" title="Kağıt">🖐️</button>
+      <button class="game-btn" id="gbtn-makas" onclick="submitChoice('makas')" title="Makas">✌️</button>
+    </div>
+    <p id="pick-status" style="margin-top:4px;font-size:0.82rem;color:#a0aec0;min-height:20px;"></p>
+  </div>
+</div>
+
+<!-- SCREEN: Bekleme -->
+<div class="screen" id="screen-waiting">
+  <div class="card">
+    <h2>Bekleniyor...</h2>
+    <div class="waiting-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <p id="waiting-status">Diğer oyuncular seçimini yapıyor...</p>
+    <div class="players-list" id="waiting-players"></div>
+  </div>
+</div>
+
+<!-- SCREEN: Sonuç -->
+<div class="screen" id="screen-result">
+  <div class="card">
+    <div class="result-row" id="result-row"></div>
+    <div class="result-title" id="result-title"></div>
+    <p id="result-sub" style="font-size:0.82rem;color:#a0aec0;margin-bottom:16px;"></p>
+    <button class="btn btn-primary" onclick="playAgain()">Tekrar Oyna 🔄</button>
+    <button class="btn btn-ghost" onclick="leaveGame()">Odadan Çık</button>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-app-compat.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-database-compat.min.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDqWbNJ4FKm2nmnGqfSjuTnU7ZTSAU5LQE",
+  authDomain: "rockit-83d39.firebaseapp.com",
+  databaseURL: "https://rockit-83d39-default-rtdb.firebaseio.com",
+  projectId: "rockit-83d39",
+  storageBucket: "rockit-83d39.firebasestorage.app",
+  messagingSenderId: "674427973994",
+  appId: "1:674427973994:web:a49a075ac2124dac0ab513"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+const AVATARS = [
+  { id: 'panda',     emoji: '🐼', label: 'Panda' },
+  { id: 'unicorn',   emoji: '🦄', label: 'Unicorn' },
+  { id: 'koala',     emoji: '🐨', label: 'Koala' },
+  { id: 'sincap',    emoji: '🐿️', label: 'Sincap' },
+  { id: 'gokkusagi', emoji: '🌈', label: 'Gökkuşağı' },
+  { id: 'ejder',     emoji: '🐉', label: 'Ejderha' },
+  { id: 'kalp',      emoji: '💖', label: 'Renkli Kalp' },
+  { id: 'harry',     emoji: '🧙', label: 'Harry Potter' },
+  { id: 'peri',      emoji: '🧚', label: 'Peri' },
+  { id: 'tavsan',    emoji: '🐰', label: 'Tavşan' },
+];
+
+const GAME_CHOICES = {
+  tas:   { emoji: '✊', label: 'Taş' },
+  kagit: { emoji: '🖐️', label: 'Kağıt' },
+  makas: { emoji: '✌️', label: 'Makas' },
+};
+
+// Taş → Makas, Makas → Kağıt, Kağıt → Taş
+const BEATS = { tas: 'makas', makas: 'kagit', kagit: 'tas' };
+
+let myId = null, myName = '', myAvatar = null;
+let roomCode = '', roomRef = null, roomListener = null;
+let myChosenId = null;
+
+// Avatar grid oluştur
+const avatarGrid = document.getElementById('avatar-grid');
+AVATARS.forEach(a => {
+  const btn = document.createElement('button');
+  btn.className = 'avatar-btn';
+  btn.textContent = a.emoji;
+  btn.title = a.label;
+  btn.onclick = () => {
+    document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    myAvatar = a.id;
+  };
+  avatarGrid.appendChild(btn);
+});
+
+function getAvatarEmoji(id) {
+  return (AVATARS.find(a => a.id === id) || { emoji: '👤' }).emoji;
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function randCode() {
+  return Math.random().toString(36).substring(2, 7).toUpperCase();
+}
+
+async function joinGame() {
+  const name = document.getElementById('input-name').value.trim();
+  const room = document.getElementById('input-room').value.trim().toUpperCase();
+  const err = document.getElementById('join-error');
+  err.textContent = '';
+  if (!name) { err.textContent = 'İsim girmeden devam edemezsin!'; return; }
+  if (!myAvatar) { err.textContent = 'Bir avatar seçmelisin!'; return; }
+
+  myId = 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+  myName = name;
+  roomCode = room || randCode();
+  roomRef = db.ref('rooms/' + roomCode);
+
+  const snap = await roomRef.once('value');
+  const data = snap.val();
+
+  if (data && data.status === 'playing') {
+    err.textContent = 'Bu oda şu an oyun oynuyor, başka oda dene.'; return;
+  }
+  const players = data ? (data.players || {}) : {};
+  if (data && Object.keys(players).length >= 3) {
+    err.textContent = 'Oda dolu! (Maks 3 oyuncu)'; return;
+  }
+
+  players[myId] = { name: myName, avatar: myAvatar, score: 0, online: true };
+  await roomRef.update({ players, status: data ? data.status : 'lobby', round: data ? (data.round || 0) : 0 });
+  roomRef.child('players/' + myId + '/online').onDisconnect().set(false);
+
+  document.getElementById('scoreboard').style.display = 'flex';
+  document.getElementById('lobby-code').textContent = roomCode;
+  showScreen('screen-lobby');
+  listenRoom();
+}
+
+function listenRoom() {
+  if (roomListener) roomRef.off('value', roomListener);
+  roomListener = roomRef.on('value', snap => {
+    const data = snap.val();
+    if (!data) return;
+    updateScoreboard(data.players || {});
+    if (data.status === 'lobby') renderLobby(data);
+    else if (data.status === 'playing') renderPick(data);
+    else if (data.status === 'result') renderResult(data);
+  });
+}
+
+function renderLobby(data) {
+  const players = data.players || {};
+  const keys = Object.keys(players);
+  const list = document.getElementById('lobby-players');
+  list.innerHTML = '';
+  keys.forEach(k => {
+    const p = players[k];
+    const div = document.createElement('div');
+    div.className = 'player-item';
+    div.innerHTML = `<div class="player-dot ${p.online !== false ? '' : 'waiting'}"></div><span style="font-size:1.2rem">${getAvatarEmoji(p.avatar)}</span><span>${p.name}</span>${k === myId ? '<span style="font-size:0.7rem;color:#a0aec0;margin-left:auto">(sen)</span>' : ''}`;
+    list.appendChild(div);
+  });
+  for (let i = keys.length; i < 3; i++) {
+    const div = document.createElement('div');
+    div.className = 'player-item';
+    div.innerHTML = `<div class="player-dot waiting"></div><span style="color:#4a5568">Bekleniyor...</span>`;
+    list.appendChild(div);
+  }
+  const btn = document.getElementById('btn-start');
+  const isFirst = keys[0] === myId;
+  btn.disabled = !isFirst || keys.length < 2;
+  btn.textContent = isFirst ? (keys.length < 2 ? 'En az 2 oyuncu gerekli' : 'Oyunu Başlat') : 'Oda sahibi başlatacak...';
+  showScreen('screen-lobby');
+}
+
+async function startGame() {
+  const snap = await roomRef.once('value');
+  const data = snap.val();
+  const keys = Object.keys(data.players || {});
+  if (keys.length < 2) return;
+  const choices = {};
+  keys.forEach(k => { choices[k] = null; });
+  await roomRef.update({ status: 'playing', choices, round: (data.round || 0) + 1 });
+}
+
+function renderPick(data) {
+  const choices = data.choices || {};
+  const myChoice = choices[myId];
+  const players = data.players || {};
+  const total = Object.keys(players).length;
+  const done = Object.values(choices).filter(v => v !== null).length;
+
+  if (myChoice !== null && myChoice !== undefined) {
+    myChosenId = myChoice;
+    ['tas', 'kagit', 'makas'].forEach(id => {
+      const b = document.getElementById('gbtn-' + id);
+      if (b) b.className = 'game-btn' + (myChosenId === id ? ' selected' : '');
+    });
+    const wList = document.getElementById('waiting-players');
+    wList.innerHTML = '';
+    Object.keys(players).forEach(k => {
+      const did = choices[k] !== null && choices[k] !== undefined;
+      const div = document.createElement('div');
+      div.className = 'player-item';
+      div.innerHTML = `<div class="player-dot ${did ? '' : 'waiting'}"></div><span style="font-size:1.1rem">${getAvatarEmoji(players[k].avatar)}</span><span>${players[k].name}</span><span style="margin-left:auto">${did ? '✅' : '⏳'}</span>`;
+      wList.appendChild(div);
+    });
+    document.getElementById('waiting-status').textContent = `${done}/${total} oyuncu seçimini yaptı`;
+    showScreen('screen-waiting');
+  } else {
+    myChosenId = null;
+    ['tas', 'kagit', 'makas'].forEach(id => {
+      const b = document.getElementById('gbtn-' + id);
+      if (b) b.className = 'game-btn';
+    });
+    const me = players[myId];
+    document.getElementById('pick-badge').textContent = me ? getAvatarEmoji(me.avatar) + ' ' + me.name : '🎮 Senin Sıran!';
+    showScreen('screen-pick');
+  }
+}
+
+async function submitChoice(choiceId) {
+  if (myChosenId) return;
+  myChosenId = choiceId;
+  ['tas', 'kagit', 'makas'].forEach(id => {
+    const b = document.getElementById('gbtn-' + id);
+    if (b) b.className = 'game-btn' + (id === choiceId ? ' selected' : '');
+  });
+  await roomRef.child('choices/' + myId).set(choiceId);
+
+  const snap = await roomRef.once('value');
+  const data = snap.val();
+  const choices = data.choices || {};
+  const players = data.players || {};
+  const allChose = Object.keys(players).every(k => choices[k] !== null && choices[k] !== undefined);
+  if (allChose) await resolveRound(data);
+}
+
+async function resolveRound(data) {
+  const choices = data.choices;
+  const players = data.players;
+  const keys = Object.keys(players);
+  const vals = keys.map(k => choices[k]);
+  const unique = [...new Set(vals)];
+
+  let winnerKeys = [];
+  let isDraw = false;
+
+  if (unique.length === 1 || unique.length === keys.length) {
+    isDraw = true;
+  } else {
+    keys.forEach(k => {
+      const myC = choices[k];
+      const others = keys.filter(o => o !== k).map(o => choices[o]);
+      const beatsAll = others.every(o => BEATS[myC] === o);
+      if (beatsAll) winnerKeys.push(k);
+    });
+    if (winnerKeys.length === 0) isDraw = true;
+  }
+
+  const newPlayers = {};
+  keys.forEach(k => {
+    newPlayers[k] = { ...players[k], score: (players[k].score || 0) + ((!isDraw && winnerKeys.includes(k)) ? 1 : 0) };
+  });
+
+  await roomRef.update({ status: 'result', lastChoices: choices, winnerKeys: isDraw ? [] : winnerKeys, isDraw, players: newPlayers });
+}
+
+function renderResult(data) {
+  const players = data.players || {};
+  const lastChoices = data.lastChoices || {};
+  const winnerKeys = data.winnerKeys || [];
+  const isDraw = data.isDraw;
+  const keys = Object.keys(players);
+
+  const row = document.getElementById('result-row');
+  row.innerHTML = '';
+  keys.forEach((k, i) => {
+    if (i > 0) {
+      const vs = document.createElement('div');
+      vs.className = 'result-vs';
+      vs.textContent = 'VS';
+      row.appendChild(vs);
+    }
+    const gc = GAME_CHOICES[lastChoices[k]] || { emoji: '?', label: '?' };
+    const isWinner = winnerKeys.includes(k);
+    const div = document.createElement('div');
+    div.className = 'result-player';
+    div.innerHTML = `
+      <div class="pavatar" style="${isWinner ? 'filter:drop-shadow(0 0 6px gold)' : ''}">${getAvatarEmoji(players[k].avatar)}</div>
+      <div class="pname">${players[k].name}</div>
+      <div class="pchoice">${gc.emoji}</div>
+      ${isWinner ? '<div style="font-size:0.7rem;color:#ffd700;font-weight:900">👑 Kazandı</div>' : ''}
+    `;
+    row.appendChild(div);
+  });
+
+  const title = document.getElementById('result-title');
+  const sub = document.getElementById('result-sub');
+
+  if (isDraw) {
+    title.textContent = '🤝 Berabere!';
+    title.className = 'result-title draw';
+    sub.textContent = 'Kimse kazanamadı!';
+  } else if (winnerKeys.includes(myId)) {
+    title.textContent = '🎉 Kazandın!';
+    title.className = 'result-title win';
+    sub.textContent = 'Tebrikler! 🏆';
+  } else {
+    const names = winnerKeys.map(k => players[k].name).join(' & ');
+    title.textContent = `😅 ${names} Kazandı!`;
+    title.className = 'result-title lose';
+    sub.textContent = keys.map(k => (GAME_CHOICES[lastChoices[k]] || {}).label).join(' · ');
+  }
+
+  showScreen('screen-result');
+}
+
+function updateScoreboard(players) {
+  const sb = document.getElementById('scoreboard');
+  sb.innerHTML = '';
+  Object.values(players).forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'score-item';
+    div.innerHTML = `<div class="score-avatar">${getAvatarEmoji(p.avatar)}</div><div class="score-label">${p.name}</div><div class="score-value">${p.score || 0}</div>`;
+    sb.appendChild(div);
+  });
+}
+
+async function playAgain() {
+  myChosenId = null;
+  const snap = await roomRef.once('value');
+  const data = snap.val();
+  const keys = Object.keys(data.players || {});
+  if (keys[0] === myId) {
+    const choices = {};
+    keys.forEach(k => { choices[k] = null; });
+    await roomRef.update({ status: 'playing', choices, round: (data.round || 0) + 1 });
+  }
+}
+
+async function leaveGame() {
+  if (roomRef) {
+    roomRef.off();
+    await roomRef.child('players/' + myId + '/online').set(false);
+  }
+  myId = null; myName = ''; myAvatar = null; roomCode = ''; roomRef = null; myChosenId = null;
+  document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('scoreboard').style.display = 'none';
+  document.getElementById('input-name').value = '';
+  document.getElementById('input-room').value = '';
+  showScreen('screen-join');
+}
+</script>
+</body>
+</html>
