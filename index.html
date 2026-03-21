@@ -514,40 +514,43 @@ async function resolveRound(data) {
     // Herkes aynı → berabere
     isDraw = true;
   } else if (used.length === 3) {
-    // 3 farklı sembol var → en çok seçilen ve klasik kuralı yenen sembol kazanır
-    // Önce en çok seçileni bul
+    // 3 farklı sembol → en çok seçilen kazanır, eşitlik varsa berabere
     const maxCount = Math.max(...used.map(([, c]) => c));
     const topSymbols = used.filter(([, c]) => c === maxCount).map(([s]) => s);
-
     if (topSymbols.length > 1) {
-      // Birden fazla sembol eşit sayıda → berabere
       isDraw = true;
     } else {
-      const candidate = topSymbols[0];
-      // Klasik kural: bu sembol, diğer kullanılan sembollerin hepsini yeniyor mu?
-      const otherSymbols = used.filter(([s]) => s !== candidate).map(([s]) => s);
-      const beatsAll = otherSymbols.every(s => BEATS[candidate] === s);
-      if (beatsAll) {
-        winnerSymbol = candidate;
-      } else {
-        isDraw = true;
-      }
+      winnerSymbol = topSymbols[0];
     }
   } else {
-    // 2 farklı sembol var → en çok seçilen ve klasik kuralı yenen kazanır
-    const maxCount = Math.max(...used.map(([, c]) => c));
-    const topSymbols = used.filter(([, c]) => c === maxCount).map(([s]) => s);
+    // 2 farklı sembol var
+    const [symA, cntA] = used[0];
+    const [symB, cntB] = used[1];
 
-    if (topSymbols.length > 1) {
+    // Önce klasik kural: hangisi diğerini yeniyor?
+    let classicWinner = null;
+    if (BEATS[symA] === symB) classicWinner = symA;
+    else if (BEATS[symB] === symA) classicWinner = symB;
+
+    if (!classicWinner) {
+      // Klasik kural belirsizse berabere (olmaması lazım ama güvenlik için)
       isDraw = true;
     } else {
-      const candidate = topSymbols[0];
-      const otherSymbols = used.filter(([s]) => s !== candidate).map(([s]) => s);
-      const beatsAll = otherSymbols.every(s => BEATS[candidate] === s);
-      if (beatsAll) {
-        winnerSymbol = candidate;
-      } else {
+      // Klasik kazanan belli, şimdi sayı üstünlüğüne bak
+      const loserSym = classicWinner === symA ? symB : symA;
+      const winnerCount = counts[classicWinner];
+      const loserCount = counts[loserSym];
+
+      if (winnerCount > loserCount) {
+        // Klasik kazanan aynı zamanda sayıca da fazla → kazanır
+        winnerSymbol = classicWinner;
+      } else if (winnerCount === loserCount) {
+        // Sayılar eşit → berabere
         isDraw = true;
+      } else {
+        // Sayıca az olan klasik kazanan → kaybedenlerin sayısı fazla ama kural gereği yeniliyorlar
+        // Klasik kural her zaman geçerli, sayı fark etmez → klasik kazanan kazanır
+        winnerSymbol = classicWinner;
       }
     }
   }
