@@ -365,23 +365,28 @@ async function joinGame() {
   if (data && data.status === 'playing') {
     err.textContent = 'Bu oda şu an oyun oynuyor, başka oda dene.'; return;
   }
-  const players = data ? (data.players || {}) : {};
-  const onlineCount = Object.values(players).filter(p => p.online !== false).length;
+  // Sadece online oyuncuları al, offline olanları temizle
+  const rawPlayers = data ? (data.players || {}) : {};
+  const players = {};
+  Object.keys(rawPlayers).forEach(k => {
+    if (rawPlayers[k].online !== false) players[k] = rawPlayers[k];
+  });
+  const onlineCount = Object.keys(players).length;
   if (data && onlineCount >= MAX_PLAYERS) {
     err.textContent = `Oda dolu! (Maks ${MAX_PLAYERS} oyuncu)`; return;
   }
 
-  players[myId] = { name: myName, avatar: myAvatar, score: 0, online: true };
-  const isNewRoom = !data;
-  await roomRef.update({
+  const isNewRoom = !data || onlineCount === 0;
+  players[myId] = { name: myName, avatar: myAvatar, score: isNewRoom ? 0 : 0, online: true };
+
+  await roomRef.set({
     players,
-    status: data ? data.status : 'lobby',
-    round: data ? (data.round || 0) : 0,
-    hostId: isNewRoom ? myId : (data.hostId || myId)
+    status: isNewRoom ? 'lobby' : (data.status || 'lobby'),
+    round: isNewRoom ? 0 : (data.round || 0),
+    hostId: isNewRoom ? myId : (data.hostId || myId),
+    targetScore: isNewRoom ? null : (data.targetScore || null)
   });
   roomRef.child('players/' + myId + '/online').onDisconnect().set(false);
-  // Bağlantı kesilince host kontrolü Firebase Functions olmadan yapılamaz
-  // ama leaveGame zaten bunu hallediyor
 
   document.getElementById('scoreboard').style.display = 'flex';
   document.getElementById('lobby-code').textContent = roomCode;
@@ -398,18 +403,22 @@ function listenRoom() {
       leaveGame();
       return;
     }
-    // Host çıktıysa yeni host ata (online olan ilk kişi)
     const players = data.players || {};
     const onlineKeys = Object.keys(players).filter(k => players[k].online !== false);
-    if (onlineKeys.length > 0 && data.hostId) {
-      const currentHost = data.hostId;
-      if (players[currentHost] && players[currentHost].online === false) {
-        // Host çevrimdışı, yeni host ata
-        if (onlineKeys[0] === myId) {
-          roomRef.update({ hostId: myId });
-        }
+
+    // Odada hiç online oyuncu kalmadıysa odayı sil
+    if (onlineKeys.length === 0) {
+      roomRef.remove();
+      return;
+    }
+
+    // Host çıktıysa yeni host ata (online olan ilk kişi)
+    if (data.hostId && players[data.hostId] && players[data.hostId].online === false) {
+      if (onlineKeys[0] === myId) {
+        roomRef.update({ hostId: myId });
       }
     }
+
     updateScoreboard(players);
     if (data.status === 'lobby') renderLobby(data);
     else if (data.status === 'playing') renderPick(data);
