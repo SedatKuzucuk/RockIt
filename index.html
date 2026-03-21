@@ -372,8 +372,16 @@ async function joinGame() {
   }
 
   players[myId] = { name: myName, avatar: myAvatar, score: 0, online: true };
-  await roomRef.update({ players, status: data ? data.status : 'lobby', round: data ? (data.round || 0) : 0 });
+  const isNewRoom = !data;
+  await roomRef.update({
+    players,
+    status: data ? data.status : 'lobby',
+    round: data ? (data.round || 0) : 0,
+    hostId: isNewRoom ? myId : (data.hostId || myId)
+  });
   roomRef.child('players/' + myId + '/online').onDisconnect().set(false);
+  // Bağlantı kesilince host kontrolü Firebase Functions olmadan yapılamaz
+  // ama leaveGame zaten bunu hallediyor
 
   document.getElementById('scoreboard').style.display = 'flex';
   document.getElementById('lobby-code').textContent = roomCode;
@@ -385,8 +393,24 @@ function listenRoom() {
   if (roomListener) roomRef.off('value', roomListener);
   roomListener = roomRef.on('value', snap => {
     const data = snap.val();
-    if (!data) return;
-    updateScoreboard(data.players || {});
+    // Oda silindiyse ana ekrana dön
+    if (!data) {
+      leaveGame();
+      return;
+    }
+    // Host çıktıysa yeni host ata (online olan ilk kişi)
+    const players = data.players || {};
+    const onlineKeys = Object.keys(players).filter(k => players[k].online !== false);
+    if (onlineKeys.length > 0 && data.hostId) {
+      const currentHost = data.hostId;
+      if (players[currentHost] && players[currentHost].online === false) {
+        // Host çevrimdışı, yeni host ata
+        if (onlineKeys[0] === myId) {
+          roomRef.update({ hostId: myId });
+        }
+      }
+    }
+    updateScoreboard(players);
     if (data.status === 'lobby') renderLobby(data);
     else if (data.status === 'playing') renderPick(data);
     else if (data.status === 'result') renderResult(data);
@@ -413,16 +437,16 @@ function renderLobby(data) {
     list.appendChild(div);
   }
   const btn = document.getElementById('btn-start');
-  const isFirst = keys[0] === myId;
-  btn.disabled = !isFirst || keys.length < 2;
-  btn.textContent = isFirst ? (keys.length < 2 ? 'En az 2 oyuncu gerekli' : `Oyunu Başlat (${keys.length} oyuncu)`) : 'Oda sahibi başlatacak...';
+  const isHost = (data.hostId === myId) || (!data.hostId && keys[0] === myId);
+  btn.disabled = !isHost || keys.length < 2;
+  btn.textContent = isHost ? (keys.length < 2 ? 'En az 2 oyuncu gerekli' : `Oyunu Başlat (${keys.length} oyuncu)`) : 'Oda sahibi başlatacak...';
   // Hedef puan seçimini sadece oda sahibine göster
   const tss = document.getElementById('target-select-section');
-  if (tss) tss.style.display = isFirst ? 'block' : 'none';
+  if (tss) tss.style.display = isHost ? 'block' : 'none';
   // Oda sahibi değilse hedef puanı göster
   const existingTarget = document.getElementById('target-info-label');
   if (existingTarget) existingTarget.remove();
-  if (!isFirst && data.targetScore) {
+  if (!isHost && data.targetScore) {
     const lbl = document.createElement('p');
     lbl.id = 'target-info-label';
     lbl.style.cssText = 'font-size:0.8rem;color:#a0aec0;margin-bottom:6px;';
@@ -485,14 +509,26 @@ async function submitChoice(choiceId) {
     const b = document.getElementById('gbtn-' + id);
     if (b) b.className = 'game-btn' + (id === choiceId ? ' selected' : '');
   });
-  await roomRef.child('choices/' + myId).set(choiceId);
 
-  const snap = await roomRef.once('value');
-  const data = snap.val();
-  const choices = data.choices || {};
-  const players = data.players || {};
-  const allChose = Object.keys(players).every(k => choices[k] !== null && choices[k] !== undefined);
-  if (allChose) await resolveRound(data);
+  // Transaction ile yaz — sadece bir kişi resolveRound'u tetikler
+  let shouldResolve = false;
+  let resolveData = null;
+  await roomRef.transaction(current => {
+    if (!current) return current;
+    if (!current.choices) return current;
+    current.choices[myId] = choiceId;
+    const playerKeys = Object.keys(current.players || {});
+    const allChose = playerKeys.every(k => current.choices[k] !== null && current.choices[k] !== undefined);
+    if (allChose && current.status === 'playing') {
+      shouldResolve = true;
+      resolveData = JSON.parse(JSON.stringify(current));
+    }
+    return current;
+  });
+
+  if (shouldResolve && resolveData) {
+    await resolveRound(resolveData);
+  }
 }
 
 async function resolveRound(data) {
@@ -676,7 +712,8 @@ async function playAgain() {
   const snap = await roomRef.once('value');
   const data = snap.val();
   const keys = Object.keys(data.players || {});
-  if (keys[0] === myId) {
+  const isHost = (data.hostId === myId) || (!data.hostId && keys[0] === myId);
+  if (isHost) {
     const choices = {};
     keys.forEach(k => { choices[k] = null; });
     await roomRef.update({ status: 'playing', choices, round: (data.round || 0) + 1 });
@@ -686,8 +723,28 @@ async function playAgain() {
 async function leaveGame() {
   if (roomRef) {
     roomRef.off();
-    await roomRef.child('players/' + myId + '/online').set(false);
+    const snap = await roomRef.once('value');
+    const data = snap.val();
+    if (data) {
+      const players = data.players || {};
+      // Bu oyuncuyu offline yap
+      await roomRef.child('players/' + myId + '/online').set(false);
+
+      // Odada online kalan var mı?
+      const remaining = Object.keys(players).filter(k => k !== myId && players[k].online !== false);
+
+      if (remaining.length === 0) {
+        // Kimse kalmadı → odayı tamamen sil
+        await roomRef.remove();
+      } else {
+        // Biri kaldı, host bu kişiyse yeni host ata
+        if (data.hostId === myId) {
+          await roomRef.update({ hostId: remaining[0] });
+        }
+      }
+    }
   }
+  const savedRoomRef = roomRef;
   myId = null; myName = ''; myAvatar = null; roomCode = ''; roomRef = null; myChosenId = null;
   document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('scoreboard').style.display = 'none';
