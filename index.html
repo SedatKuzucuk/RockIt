@@ -522,25 +522,8 @@ async function submitChoice(choiceId) {
     if (b) b.className = 'game-btn' + (id === choiceId ? ' selected' : '');
   });
 
-  // Transaction ile yaz — sadece bir kişi resolveRound'u tetikler
-  let shouldResolve = false;
-  let resolveData = null;
-  await roomRef.transaction(current => {
-    if (!current) return current;
-    if (!current.choices) return current;
-    current.choices[myId] = choiceId;
-    const playerKeys = Object.keys(current.players || {});
-    const allChose = playerKeys.every(k => current.choices[k] !== null && current.choices[k] !== undefined);
-    if (allChose && current.status === 'playing') {
-      shouldResolve = true;
-      resolveData = JSON.parse(JSON.stringify(current));
-    }
-    return current;
-  });
-
-  if (shouldResolve && resolveData) {
-    await resolveRound(resolveData);
-  }
+  // Seçimi kaydet
+  await roomRef.child('choices/' + myId).set(choiceId);
 }
 
 async function resolveRound(data) {
