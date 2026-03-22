@@ -141,6 +141,7 @@ body::before {
   border: 1px solid var(--gray2);
   padding: 20px;
   position: relative;
+  overflow: visible;
 }
 .panel::before {
   content: '';
@@ -412,7 +413,8 @@ input[type="text"]::placeholder { color: #444; }
   flex-wrap: wrap;
   gap: 6px;
   justify-content: center;
-  margin: 12px 0;
+  margin: 20px 0 28px;
+  overflow: visible;
 }
 .result-card-player {
   background: var(--black);
@@ -423,6 +425,7 @@ input[type="text"]::placeholder { color: #444; }
   flex: 1;
   max-width: 80px;
   position: relative;
+  overflow: visible;
 }
 .result-card-player.winner {
   border-color: var(--yellow);
@@ -958,6 +961,10 @@ async function refreshRooms() {
 }
 
 function quickJoin(code) {
+  const name = document.getElementById('input-name').value.trim();
+  const err = document.getElementById('join-error');
+  if (!name) { err.textContent = '✕ ÖNCE İSMİNİ GİR!'; document.getElementById('input-name').focus(); return; }
+  if (!myAvatar) { err.textContent = '✕ ÖNCE BİR AVATAR SEÇ!'; return; }
   document.getElementById('input-room').value = code;
   joinGame();
 }
@@ -1026,7 +1033,7 @@ function listenRoom() {
     } else if (data.status === 'playing') {
       const choices = data.choices || {};
       const playerKeys = Object.keys(players);
-      const allChose = playerKeys.every(k => choices[k] !== null && choices[k] !== undefined);
+      const allChose = playerKeys.length > 0 && playerKeys.every(k => choices[k] && choices[k] !== false);
       if (allChose && !isResolvingRound) {
         const sortedKeys = onlineKeys.slice().sort();
         if (sortedKeys[0] === myId) {
@@ -1088,7 +1095,7 @@ async function startGame() {
   const onlineKeys = Object.keys(players).filter(k => players[k].online !== false);
   if (onlineKeys.length < 2) return;
   const choices = {};
-  onlineKeys.forEach(k => { choices[k] = null; });
+  onlineKeys.forEach(k => { choices[k] = false; });
   await roomRef.update({ status: 'playing', choices, round: (data.round || 0) + 1, targetScore });
 }
 
@@ -1098,7 +1105,7 @@ function renderPick(data) {
   const players = data.players || {};
   const total = Object.keys(players).length;
   const done = Object.values(choices).filter(v => v !== null).length;
-  const effectiveChoice = myChoice || myChosenId;
+  const effectiveChoice = (myChoice && myChoice !== false) ? myChoice : myChosenId;
 
   if (effectiveChoice) {
     myChosenId = effectiveChoice;
@@ -1145,7 +1152,7 @@ async function resolveRound(data) {
   const players = data.players;
   const keys = Object.keys(players);
   const counts = { tas: 0, kagit: 0, makas: 0 };
-  keys.forEach(k => { if (choices[k]) counts[choices[k]]++; });
+  keys.forEach(k => { if (choices[k] && choices[k] !== false) counts[choices[k]]++; });
   const used = Object.entries(counts).filter(([, c]) => c > 0);
 
   let winnerSymbol = null, isDraw = false;
@@ -1167,7 +1174,7 @@ async function resolveRound(data) {
     else winnerSymbol = classicWinner;
   }
 
-  const winnerKeys = winnerSymbol ? keys.filter(k => choices[k] === winnerSymbol) : [];
+  const winnerKeys = winnerSymbol ? keys.filter(k => choices[k] === winnerSymbol) : ['__none__'];
   const newPlayers = {};
   keys.forEach(k => {
     newPlayers[k] = { ...players[k], score: (players[k].score || 0) + (winnerKeys.includes(k) ? 1 : 0) };
@@ -1181,7 +1188,8 @@ function renderResult(data) {
   const players = data.players || {};
   const lastChoices = data.lastChoices || {};
   const lastCounts = data.lastCounts || {};
-  const winnerKeys = data.winnerKeys || [];
+  const rawWinnerKeys = Array.isArray(data.winnerKeys) ? data.winnerKeys : Object.values(data.winnerKeys || {});
+  const winnerKeys = rawWinnerKeys.filter(k => k !== '__none__');
   const winnerSymbol = data.winnerSymbol;
   const isDraw = data.isDraw;
   const keys = Object.keys(players);
@@ -1267,7 +1275,7 @@ async function restartLobby() {
   if (sortedOnline[0] !== myId) return;
   const resetPlayers = {};
   keys.forEach(k => { resetPlayers[k] = { ...data.players[k], score: 0 }; });
-  await roomRef.update({ status: 'lobby', players: resetPlayers, choices: null, round: 0, targetScore: null });
+  await roomRef.update({ status: 'lobby', players: resetPlayers, choices: {}, round: 0, targetScore: null });
 }
 
 function updateScoreBar(players, targetSc) {
@@ -1276,8 +1284,6 @@ function updateScoreBar(players, targetSc) {
   Object.values(players).filter(p => p.online !== false).forEach(p => {
     const cell = document.createElement('div');
     cell.className = 'score-cell';
-    const target = targetSc || 7;
-    const pct = Math.min(100, Math.round(((p.score || 0) / target) * 100));
     cell.innerHTML = `<div class="sc-av">${getAvatarEmoji(p.avatar)}</div><div class="sc-nm">${p.name}</div><div class="sc-pt">${p.score || 0}</div>`;
     sb.appendChild(cell);
   });
@@ -1307,6 +1313,7 @@ function resetLocalState() {
   document.getElementById('score-bar').classList.remove('visible');
   document.getElementById('input-name').value = '';
   document.getElementById('input-room').value = '';
+  document.getElementById('join-error').textContent = '';
 }
 
 async function leaveGame() {
