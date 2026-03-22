@@ -1503,6 +1503,7 @@ let roomCode = '', roomRef = null, roomListener = null;
 let myChosenId = null;
 let targetScore = 7;
 let isResolvingRound = false;
+let lastSeenRound = 0;
 
 function getAvatarSvg(id, size='32px') {
   const svg = AVATAR_SVGS[id];
@@ -1689,7 +1690,14 @@ function listenRoom() {
     const players = data.players || {};
     const onlineKeys = Object.keys(players).filter(k => players[k].online !== false);
 
-    if (onlineKeys.length === 0) { roomRef.remove(); return; }
+    if (onlineKeys.length === 0) {
+      roomRef.off();
+      roomRef.remove();
+      resetLocalState();
+      showScreen('screen-join');
+      refreshRooms();
+      return;
+    }
 
     if (data.hostId && players[data.hostId] && players[data.hostId].online === false) {
       if (onlineKeys[0] === myId) roomRef.update({ hostId: myId });
@@ -1701,16 +1709,29 @@ function listenRoom() {
       renderLobby(data);
     } else if (data.status === 'playing') {
       const choices = data.choices || {};
+      const currentRound = data.round || 0;
+
+      // Yeni tur başladıysa myChosenId'yi sıfırla
+      if (currentRound !== lastSeenRound) {
+        lastSeenRound = currentRound;
+        myChosenId = null;
+      }
+
       // choices sadece online oyuncular için var, sadece onları kontrol et
       const choiceKeys = Object.keys(choices);
       const allChose = choiceKeys.length > 0 && choiceKeys.every(k => choices[k] && choices[k] !== false);
-      if (allChose && !isResolvingRound) {
-        const sortedKeys = onlineKeys.slice().sort();
-        if (sortedKeys[0] === myId) {
-          isResolvingRound = true;
-          resolveRound(data).finally(() => { isResolvingRound = false; });
+      if (allChose) {
+        // En küçük ID'li oyuncu sonucu hesaplar
+        if (!isResolvingRound) {
+          const sortedKeys = onlineKeys.slice().sort();
+          if (sortedKeys[0] === myId) {
+            isResolvingRound = true;
+            resolveRound(data).finally(() => { isResolvingRound = false; });
+          }
         }
-      } else if (!allChose) {
+        // Tüm oyuncular seçimini yaptı — bekleme ekranı göster
+        renderPick(data);
+      } else {
         renderPick(data);
       }
     } else if (data.status === 'result') {
@@ -1773,7 +1794,7 @@ function renderPick(data) {
   const choices = data.choices || {};
   const myChoice = choices[myId];
   const players = data.players || {};
-  const total = Object.keys(players).length;
+  const total = Object.keys(choices).length; // sadece bu turda oynayan (online) oyuncular
   const done = Object.values(choices).filter(v => v && v !== false).length;
   const effectiveChoice = (myChoice && myChoice !== false) ? myChoice : myChosenId;
 
@@ -1785,7 +1806,8 @@ function renderPick(data) {
     });
     const wList = document.getElementById('waiting-players');
     wList.innerHTML = '';
-    Object.keys(players).forEach(k => {
+    Object.keys(choices).forEach(k => {
+      if (!players[k]) return; // güvenlik kontrolü
       const did = choices[k] && choices[k] !== false;
       const div = document.createElement('div');
       div.className = 'wait-player' + (did ? ' done' : '');
@@ -1829,7 +1851,10 @@ async function resolveRound(data) {
 
   let winnerSymbol = null, isDraw = false;
 
-  if (used.length === 1) {
+  if (used.length === 0) {
+    // Seçim yok — berabere say (edge case)
+    isDraw = true;
+  } else if (used.length === 1) {
     isDraw = true;
   } else if (used.length === 3) {
     const maxCount = Math.max(...used.map(([, c]) => c));
@@ -1864,7 +1889,8 @@ function renderResult(data) {
   const winnerKeys = rawWinnerKeys.filter(k => k !== '__none__');
   const winnerSymbol = data.winnerSymbol;
   const isDraw = data.isDraw;
-  const keys = Object.keys(players);
+  // Sadece online oyuncuları göster
+  const keys = Object.keys(players).filter(k => players[k].online !== false);
 
   // Oyuncu kartları
   const rp = document.getElementById('result-players');
@@ -1931,7 +1957,7 @@ function renderResult(data) {
 }
 
 function renderGameOver(players, target) {
-  const sorted = Object.values(players).sort((a, b) => (b.score || 0) - (a.score || 0));
+  const sorted = Object.values(players).filter(p => p.online !== false).sort((a, b) => (b.score || 0) - (a.score || 0));
   const winner = sorted[0];
 
   // Fullscreen win overlay göster
@@ -2037,6 +2063,7 @@ function closeWinOverlay() {
 async function restartLobby() {
   if (!roomRef) return;
   myChosenId = null;
+  lastSeenRound = 0;
   const snap = await roomRef.once('value');
   const data = snap.val();
   if (!data) return;
@@ -2046,6 +2073,11 @@ async function restartLobby() {
   if (sortedOnline[0] !== myId) return;
   const resetPlayers = {};
   keys.forEach(k => { resetPlayers[k] = { ...data.players[k], score: 0 }; });
+  targetScore = 7; // local değişkeni de sıfırla
+  // Lobi hedef seçim butonunu da sıfırla
+  document.querySelectorAll('.score-opt').forEach(b => b.classList.remove('selected'));
+  const defaultBtn = document.querySelector('.score-opt:nth-child(3)');
+  if (defaultBtn) defaultBtn.classList.add('selected');
   await roomRef.update({ status: 'lobby', players: resetPlayers, choices: {}, round: 0, targetScore: null });
 }
 
@@ -2063,6 +2095,7 @@ function updateScoreBar(players, targetSc) {
 async function playAgain() {
   if (!roomRef) return;
   myChosenId = null;
+  lastSeenRound = 0;
   const snap = await roomRef.once('value');
   const data = snap.val();
   if (!data || data.status !== 'result') return;
@@ -2080,7 +2113,7 @@ async function playAgain() {
 function resetLocalState() {
   if (roomRef) roomRef.off();
   myId = null; myName = ''; myAvatar = null; roomCode = ''; roomRef = null;
-  myChosenId = null; roomListener = null; isResolvingRound = false;
+  myChosenId = null; roomListener = null; isResolvingRound = false; lastSeenRound = 0;
   document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('score-bar').classList.remove('visible');
   document.getElementById('input-name').value = '';
