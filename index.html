@@ -482,8 +482,11 @@ function renderPick(data) {
   const total = Object.keys(players).length;
   const done = Object.values(choices).filter(v => v !== null).length;
 
-  if (myChoice !== null && myChoice !== undefined) {
-    myChosenId = myChoice;
+  // Firebase'den seçim geldi veya yerel olarak zaten seçtik
+  const effectiveChoice = myChoice || myChosenId;
+
+  if (effectiveChoice) {
+    myChosenId = effectiveChoice;
     ['tas', 'kagit', 'makas'].forEach(id => {
       const b = document.getElementById('gbtn-' + id);
       if (b) b.className = 'game-btn' + (myChosenId === id ? ' selected' : '');
