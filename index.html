@@ -732,6 +732,130 @@ input[type="text"]::placeholder { color: #444; }
   30%  { opacity: 1; }
   100% { opacity: 0; transform: translateX(-50%) translateY(-30px); }
 }
+
+/* ===== FULLSCREEN WIN OVERLAY ===== */
+#win-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 9000;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 20px;
+}
+#win-overlay.show { display: flex; animation: overlay-in 0.4s ease-out; }
+@keyframes overlay-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.win-overlay-title {
+  font-family: 'Bebas Neue';
+  font-size: 3.5rem;
+  letter-spacing: 6px;
+  color: var(--yellow);
+  text-shadow: 5px 5px 0 var(--orange);
+  animation: win-title-pulse 0.6s ease-in-out infinite alternate;
+  margin-bottom: 8px;
+}
+@keyframes win-title-pulse {
+  from { text-shadow: 5px 5px 0 var(--orange); letter-spacing: 6px; }
+  to   { text-shadow: 8px 8px 0 var(--orange), -2px -2px 0 var(--green); letter-spacing: 8px; }
+}
+.win-overlay-name {
+  font-family: 'Bebas Neue';
+  font-size: 2rem;
+  letter-spacing: 4px;
+  color: var(--white);
+  margin-bottom: 24px;
+}
+.win-avatar-stage {
+  width: 50vw;
+  height: 50vw;
+  max-width: 320px;
+  max-height: 320px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+.win-avatar-stage svg {
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(0 0 24px var(--yellow)) drop-shadow(0 0 48px var(--orange));
+  animation: champion-dance 0.8s ease-in-out infinite;
+}
+@keyframes champion-dance {
+  0%   { transform: translateY(0) rotate(-4deg) scale(1); filter: drop-shadow(0 0 24px var(--yellow)); }
+  25%  { transform: translateY(-20px) rotate(4deg) scale(1.08); filter: drop-shadow(0 0 40px var(--yellow)) drop-shadow(0 0 60px var(--orange)); }
+  50%  { transform: translateY(-10px) rotate(-2deg) scale(1.05); filter: drop-shadow(0 0 32px var(--green)); }
+  75%  { transform: translateY(-16px) rotate(3deg) scale(1.06); filter: drop-shadow(0 0 40px var(--yellow)); }
+  100% { transform: translateY(0) rotate(-4deg) scale(1); filter: drop-shadow(0 0 24px var(--yellow)); }
+}
+
+/* Confetti particles */
+.confetti-particle {
+  position: absolute;
+  width: 8px; height: 8px;
+  border-radius: 2px;
+  animation: confetti-fall linear infinite;
+  pointer-events: none;
+  z-index: 9001;
+}
+@keyframes confetti-fall {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+}
+
+/* Special per-avatar dance overrides */
+.champion-panda    { animation: panda-champion 0.5s ease-in-out infinite alternate !important; }
+@keyframes panda-champion { from { transform: rotate(-20deg) scale(1.0); } to { transform: rotate(20deg) scale(1.15); } }
+
+.champion-unicorn  { animation: unicorn-champion 1s ease-in-out infinite !important; }
+@keyframes unicorn-champion { 0%,100%{transform:translateY(0) rotate(-8deg) scale(1)} 50%{transform:translateY(-30px) rotate(8deg) scale(1.12)} }
+
+.champion-ejder    { animation: dragon-champion 0.7s ease-in-out infinite !important; }
+@keyframes dragon-champion { 0%,100%{transform:scale(1) rotate(-5deg)} 30%{transform:scale(1.18) rotate(5deg)} 60%{transform:scale(1.08) rotate(-3deg)} }
+
+.champion-sovalye  { animation: knight-champion 0.9s ease-in-out infinite !important; }
+@keyframes knight-champion { 0%,100%{transform:translateY(0) rotate(0deg)} 25%{transform:translateY(-14px) rotate(-6deg)} 75%{transform:translateY(-8px) rotate(6deg)} }
+
+.champion-samuray  { animation: samurai-champion 0.6s ease-in-out infinite !important; }
+@keyframes samurai-champion { 0%,100%{transform:rotate(-8deg) scale(1)} 50%{transform:rotate(8deg) scale(1.15) skewX(-5deg)} }
+
+.champion-harry    { animation: wizard-champion 1s ease-in-out infinite !important; }
+@keyframes wizard-champion { 0%,100%{transform:rotate(-5deg) scale(1)} 33%{transform:rotate(5deg) scale(1.1) translateY(-10px)} 66%{transform:rotate(-3deg) scale(1.05) translateY(-5px)} }
+
+.champion-peri     { animation: fairy-champion 0.5s ease-in-out infinite alternate !important; }
+@keyframes fairy-champion { from{transform:translateY(-12px) rotate(-10deg) scale(1.05)} to{transform:translateY(12px) rotate(10deg) scale(1.12)} }
+
+.champion-tavsan   { animation: bunny-champion 0.5s cubic-bezier(0.36,0.07,0.19,0.97) infinite !important; }
+@keyframes bunny-champion { 0%,100%{transform:translateY(0) scaleY(1)} 40%{transform:translateY(-32px) scaleY(1.12)} 80%{transform:translateY(0) scaleX(1.2) scaleY(0.8)} }
+
+.champion-sincap   { animation: squirrel-champion 0.6s ease-in-out infinite !important; }
+@keyframes squirrel-champion { 0%,100%{transform:translateY(0) rotate(-10deg)} 50%{transform:translateY(-22px) rotate(10deg) scale(1.1)} }
+
+.champion-koala    { animation: koala-champion 0.4s ease-in-out infinite !important; }
+@keyframes koala-champion { 0%,100%{transform:rotate(-12deg) scale(1.05)} 50%{transform:rotate(12deg) scale(1.18)} }
+
+.win-overlay-btn {
+  font-family: 'Bebas Neue';
+  font-size: 1.2rem;
+  letter-spacing: 4px;
+  padding: 14px 40px;
+  background: var(--yellow);
+  color: var(--black);
+  border: none;
+  cursor: pointer;
+  box-shadow: 5px 5px 0 var(--orange);
+  transition: all 0.1s;
+  margin-top: 8px;
+}
+.win-overlay-btn:hover { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 var(--orange); }
+.win-overlay-btn:active { transform: translate(2px,2px); box-shadow: 3px 3px 0 var(--orange); }
 </style>
 </head>
 <body>
@@ -764,10 +888,9 @@ input[type="text"]::placeholder { color: #444; }
       <div class="sec-label">Avatarını Seç</div>
       <div class="avatar-grid" id="avatar-grid"></div>
       <div class="divider-line"></div>
-      <div class="sec-label">Oda Kodu (boş = yeni oda aç)</div>
-      <input type="text" id="input-room" placeholder="KOD GİR..." maxlength="15" style="text-transform:uppercase;margin-bottom:6px" />
       <div class="err" id="join-error"></div>
-      <button class="btn btn-yellow" onclick="joinGame()">OYUNA GİR →</button>
+      <button class="btn btn-yellow" onclick="createRoom()" style="margin-bottom:8px">YENİ ODA OLUŞTUR →</button>
+      <div style="text-align:center;font-size:0.6rem;color:#555;letter-spacing:3px;margin-bottom:8px">— VEYA MEVCUT ODAYA —</div>
     </div>
 
     <div class="panel">
@@ -859,6 +982,14 @@ input[type="text"]::placeholder { color: #444; }
   </div>
 </div>
 
+<!-- WIN OVERLAY -->
+<div id="win-overlay">
+  <div class="win-overlay-title">🏆 ŞAMPİYON!</div>
+  <div class="win-overlay-name" id="win-overlay-name"></div>
+  <div class="win-avatar-stage" id="win-avatar-stage"></div>
+  <button class="win-overlay-btn" onclick="closeWinOverlay()">DEVAM ET →</button>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-app-compat.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-database-compat.min.js"></script>
 <script>
@@ -876,17 +1007,261 @@ const db = firebase.database();
 
 const MAX_PLAYERS = 7;
 
+// SVG avatarlar - profesyonel oyun tasarımı seviyesinde
+const AVATAR_SVGS = {
+  panda: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="32" cy="36" r="22" fill="#f0ede4" stroke="#111" stroke-width="2"/>
+    <circle cx="16" cy="20" r="10" fill="#111"/>
+    <circle cx="48" cy="20" r="10" fill="#111"/>
+    <circle cx="22" cy="32" r="7" fill="#111"/>
+    <circle cx="42" cy="32" r="7" fill="#111"/>
+    <circle cx="23" cy="31" r="3" fill="#fff"/>
+    <circle cx="43" cy="31" r="3" fill="#fff"/>
+    <circle cx="24" cy="31" r="1.5" fill="#111"/>
+    <circle cx="44" cy="31" r="1.5" fill="#111"/>
+    <ellipse cx="32" cy="42" rx="6" ry="4" fill="#f5a0a0"/>
+    <path d="M28 46 Q32 50 36 46" stroke="#111" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <line x1="20" y1="44" x2="10" y2="48" stroke="#888" stroke-width="1.2"/>
+    <line x1="44" y1="44" x2="54" y2="48" stroke="#888" stroke-width="1.2"/>
+  </svg>`,
+
+  unicorn: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="32" cy="34" r="20" fill="#ffe8f5"/>
+    <ellipse cx="32" cy="34" rx="20" ry="20" fill="#ffe8f5" stroke="#d4a0c0" stroke-width="1.5"/>
+    <polygon points="32,6 29,20 35,20" fill="url(#grad-horngrad)"/>
+    <defs><linearGradient id="grad-horngrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffe040"/><stop offset="100%" stop-color="#ff8c00"/></linearGradient></defs>
+    <path d="M14 16 Q8 20 12 28 Q6 24 14 16Z" fill="#ff9de2"/>
+    <path d="M50 16 Q56 20 52 28 Q58 24 50 16Z" fill="#9de2ff"/>
+    <path d="M26 26 Q28 20 32 22 Q36 20 38 26" fill="#c8a0e0" stroke="none"/>
+    <circle cx="24" cy="30" r="4" fill="#fff"/>
+    <circle cx="40" cy="30" r="4" fill="#fff"/>
+    <circle cx="25" cy="30" r="2" fill="#5b3f8a"/>
+    <circle cx="41" cy="30" r="2" fill="#5b3f8a"/>
+    <circle cx="25.8" cy="29.2" r="0.8" fill="#fff"/>
+    <circle cx="41.8" cy="29.2" r="0.8" fill="#fff"/>
+    <ellipse cx="32" cy="39" rx="4" ry="2.5" fill="#ffb0d8"/>
+    <path d="M29 42 Q32 46 35 42" stroke="#c06090" stroke-width="1.5" fill="none"/>
+  </svg>`,
+
+  koala: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="14" cy="26" rx="10" ry="11" fill="#8a8a8a" stroke="#555" stroke-width="1.5"/>
+    <ellipse cx="50" cy="26" rx="10" ry="11" fill="#8a8a8a" stroke="#555" stroke-width="1.5"/>
+    <ellipse cx="14" cy="25" rx="7" ry="8" fill="#b8b8b8"/>
+    <ellipse cx="50" cy="25" rx="7" ry="8" fill="#b8b8b8"/>
+    <circle cx="32" cy="36" r="20" fill="#9a9a9a" stroke="#555" stroke-width="1.5"/>
+    <ellipse cx="32" cy="38" rx="13" ry="10" fill="#b8b8b8"/>
+    <ellipse cx="32" cy="33" rx="8" ry="6" fill="#333" stroke="#111" stroke-width="1"/>
+    <circle cx="26" cy="31" r="4" fill="#fff"/>
+    <circle cx="38" cy="31" r="4" fill="#fff"/>
+    <circle cx="27" cy="31" r="2" fill="#111"/>
+    <circle cx="39" cy="31" r="2" fill="#111"/>
+    <circle cx="27.8" cy="30.3" r="0.8" fill="#fff"/>
+    <circle cx="39.8" cy="30.3" r="0.8" fill="#fff"/>
+    <path d="M28 40 Q32 44 36 40" stroke="#555" stroke-width="1.5" fill="none"/>
+  </svg>`,
+
+  sincap: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="50" cy="18" rx="12" ry="18" fill="#c47a30" stroke="#7a4a10" stroke-width="1.5" transform="rotate(-20 50 18)"/>
+    <ellipse cx="49" cy="17" rx="8" ry="13" fill="#e8a860" transform="rotate(-20 50 18)"/>
+    <ellipse cx="18" cy="16" rx="5" ry="8" fill="#c47a30" stroke="#7a4a10" stroke-width="1"/>
+    <ellipse cx="18" cy="15" rx="3" ry="5" fill="#f0c080"/>
+    <circle cx="30" cy="36" r="20" fill="#c47a30" stroke="#7a4a10" stroke-width="1.5"/>
+    <ellipse cx="30" cy="40" rx="12" ry="8" fill="#e8a860"/>
+    <circle cx="24" cy="30" r="4" fill="#fff"/>
+    <circle cx="36" cy="30" r="4" fill="#fff"/>
+    <circle cx="25" cy="30" r="2" fill="#2a1500"/>
+    <circle cx="37" cy="30" r="2" fill="#2a1500"/>
+    <circle cx="25.8" cy="29.3" r="0.8" fill="#fff"/>
+    <circle cx="37.8" cy="29.3" r="0.8" fill="#fff"/>
+    <ellipse cx="30" cy="36" rx="5" ry="3.5" fill="#e06070"/>
+    <path d="M27 40 Q30 44 33 40" stroke="#7a4a10" stroke-width="1.5" fill="none"/>
+    <line x1="18" y1="38" x2="8" y2="36" stroke="#888" stroke-width="1"/>
+    <line x1="18" y1="40" x2="8" y2="40" stroke="#888" stroke-width="1"/>
+  </svg>`,
+
+  sovalye: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="grad-armorgrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#c8d8e8"/><stop offset="100%" stop-color="#6888a8"/>
+      </linearGradient>
+      <linearGradient id="grad-helmetgrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#a0b8d0"/><stop offset="100%" stop-color="#4868a0"/>
+      </linearGradient>
+    </defs>
+    <rect x="18" y="38" width="28" height="20" rx="2" fill="url(#grad-armorgrad)" stroke="#446" stroke-width="1.5"/>
+    <rect x="22" y="40" width="8" height="16" rx="1" fill="#5878a8" opacity="0.4"/>
+    <rect x="34" y="40" width="8" height="16" rx="1" fill="#5878a8" opacity="0.4"/>
+    <path d="M14 38 Q18 30 32 28 Q46 30 50 38Z" fill="url(#grad-armorgrad)" stroke="#446" stroke-width="1.5"/>
+    <ellipse cx="32" cy="26" rx="14" ry="16" fill="url(#grad-helmetgrad)" stroke="#224" stroke-width="2"/>
+    <rect x="24" y="24" width="16" height="6" rx="1" fill="#1a2a3a" opacity="0.8"/>
+    <rect x="26" y="25" width="12" height="4" rx="0.5" fill="#0a1a2a" opacity="0.6"/>
+    <line x1="24" y1="27" x2="40" y2="27" stroke="#6888c8" stroke-width="0.8" opacity="0.5"/>
+    <path d="M20 14 Q26 8 32 12 Q38 8 44 14 Q46 20 44 24 Q38 22 32 22 Q26 22 20 24 Q18 20 20 14Z" fill="url(#grad-helmetgrad)" stroke="#224" stroke-width="1.5"/>
+    <polygon points="30,4 32,14 34,4" fill="#e8d040" stroke="#a89010" stroke-width="1"/>
+    <polygon points="32,4 31,9 33,9" fill="#fff8a0"/>
+    <rect x="46" y="20" width="12" height="32" rx="1" fill="#8898a8" stroke="#446" stroke-width="1"/>
+    <rect x="44" y="18" width="16" height="4" rx="1" fill="#6878a0" stroke="#446" stroke-width="1"/>
+    <polygon points="52,54 48,58 56,58" fill="#6878a0" stroke="#446" stroke-width="1"/>
+    <rect x="8" y="30" width="10" height="18" rx="1" fill="#7888a0" stroke="#446" stroke-width="1"/>
+    <rect x="4" y="28" width="18" height="4" rx="8" fill="#6878a0" stroke="#446" stroke-width="1"/>
+  </svg>`,
+
+  ejder: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="grad-dragongrad" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#2a8a2a"/><stop offset="100%" stop-color="#0a4a0a"/>
+      </linearGradient>
+    </defs>
+    <ellipse cx="42" cy="12" rx="8" ry="10" fill="#1a6a1a" stroke="#0a3a0a" stroke-width="1.5" transform="rotate(30 42 12)"/>
+    <ellipse cx="22" cy="12" rx="8" ry="10" fill="#1a6a1a" stroke="#0a3a0a" stroke-width="1.5" transform="rotate(-30 22 12)"/>
+    <path d="M10 54 Q8 40 16 32 Q20 26 28 24 Q24 32 22 44 Q18 50 10 54Z" fill="#1a6a1a" stroke="#0a3a0a" stroke-width="1.5"/>
+    <path d="M54 54 Q56 40 48 32 Q44 26 36 24 Q40 32 42 44 Q46 50 54 54Z" fill="#1a6a1a" stroke="#0a3a0a" stroke-width="1.5"/>
+    <ellipse cx="32" cy="36" rx="20" ry="18" fill="url(#grad-dragongrad)" stroke="#0a3a0a" stroke-width="2"/>
+    <ellipse cx="32" cy="40" rx="14" ry="10" fill="#0a5a18" opacity="0.5"/>
+    <path d="M24 36 L20 28 L26 34Z M40 36 L44 28 L38 34Z M32 32 L32 22 L36 30Z" fill="#3aaa3a" opacity="0.8"/>
+    <circle cx="24" cy="30" r="5" fill="#e8e800" stroke="#808000" stroke-width="1"/>
+    <circle cx="40" cy="30" r="5" fill="#e8e800" stroke="#808000" stroke-width="1"/>
+    <ellipse cx="24" cy="30" rx="2" ry="3.5" fill="#0a0a0a"/>
+    <ellipse cx="40" cy="30" rx="2" ry="3.5" fill="#0a0a0a"/>
+    <circle cx="24.6" cy="28.5" r="1" fill="#fff"/>
+    <circle cx="40.6" cy="28.5" r="1" fill="#fff"/>
+    <path d="M22 42 Q27 38 32 40 Q37 38 42 42 Q38 48 32 48 Q26 48 22 42Z" fill="#0a5a10" stroke="#0a3a0a" stroke-width="1"/>
+    <path d="M24 44 L22 50 M28 45 L27 52 M32 45 L32 52 M36 45 L37 52 M40 44 L42 50" stroke="#3aaa3a" stroke-width="1.2"/>
+    <polygon points="20,8 24,16 16,16" fill="#e83020" opacity="0.9"/>
+    <polygon points="32,6 36,16 28,16" fill="#e86020" opacity="0.9"/>
+    <polygon points="44,8 48,16 40,16" fill="#e83020" opacity="0.9"/>
+  </svg>`,
+
+  samuray: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="grad-samurai-armor" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#c83030"/><stop offset="100%" stop-color="#6a0808"/>
+      </linearGradient>
+      <linearGradient id="grad-samurai-helmet" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#1a1a1a"/><stop offset="100%" stop-color="#3a0808"/>
+      </linearGradient>
+    </defs>
+    <rect x="16" y="38" width="32" height="20" rx="2" fill="url(#grad-samurai-armor)" stroke="#400" stroke-width="1.5"/>
+    <line x1="22" y1="38" x2="22" y2="58" stroke="#800" stroke-width="1"/>
+    <line x1="32" y1="38" x2="32" y2="58" stroke="#800" stroke-width="1"/>
+    <line x1="42" y1="38" x2="42" y2="58" stroke="#800" stroke-width="1"/>
+    <path d="M12 38 Q16 30 32 28 Q48 30 52 38Z" fill="url(#grad-samurai-armor)" stroke="#400" stroke-width="1.5"/>
+    <ellipse cx="32" cy="24" rx="14" ry="16" fill="#c8a878" stroke="#806040" stroke-width="1.5"/>
+    <ellipse cx="32" cy="22" rx="14" ry="13" fill="url(#grad-samurai-helmet)" stroke="#111" stroke-width="2"/>
+    <path d="M18 20 Q20 10 32 8 Q44 10 46 20 Q44 24 32 24 Q20 24 18 20Z" fill="url(#grad-samurai-helmet)" stroke="#111" stroke-width="2"/>
+    <path d="M14 16 Q18 10 22 14" stroke="#c82020" stroke-width="2" fill="none"/>
+    <path d="M50 16 Q46 10 42 14" stroke="#c82020" stroke-width="2" fill="none"/>
+    <path d="M20 16 Q32 10 44 16" fill="#c82020" stroke="#800" stroke-width="1"/>
+    <rect x="23" y="23" width="18" height="5" rx="0.5" fill="#0a0a0a"/>
+    <line x1="27" y1="24" x2="37" y2="24" stroke="#c83030" stroke-width="1" opacity="0.8"/>
+    <line x1="26" y1="26" x2="38" y2="26" stroke="#c83030" stroke-width="0.8" opacity="0.5"/>
+    <circle cx="26" cy="30" r="3" fill="#c8a878"/>
+    <circle cx="38" cy="30" r="3" fill="#c8a878"/>
+    <circle cx="26" cy="30" r="1.5" fill="#1a1a0a"/>
+    <circle cx="38" cy="30" r="1.5" fill="#1a1a0a"/>
+    <rect x="54" y="10" width="5" height="40" rx="1" fill="#c0b060" stroke="#806020" stroke-width="1"/>
+    <rect x="52" y="8" width="9" height="4" rx="1" fill="#a09050" stroke="#806020" stroke-width="1"/>
+    <rect x="54" y="46" width="5" height="8" rx="1" fill="#808080"/>
+    <rect x="4" y="26" width="16" height="5" rx="8" fill="#c83030" stroke="#400" stroke-width="1"/>
+    <rect x="5" y="27" width="14" height="3" rx="6" fill="#ff6060" opacity="0.3"/>
+  </svg>`,
+
+  harry: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="grad-robe" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#1a1a2e"/><stop offset="100%" stop-color="#0a0a18"/>
+      </linearGradient>
+    </defs>
+    <path d="M14 40 Q12 52 16 58 L32 58 L48 58 Q52 52 50 40 Q44 34 32 32 Q20 34 14 40Z" fill="url(#grad-robe)" stroke="#3030a0" stroke-width="1.5"/>
+    <path d="M16 40 Q20 36 32 34 Q44 36 48 40" fill="none" stroke="#5050d0" stroke-width="1" opacity="0.6"/>
+    <path d="M18 58 Q22 52 20 44" fill="none" stroke="#3030a0" stroke-width="1"/>
+    <path d="M46 58 Q42 52 44 44" fill="none" stroke="#3030a0" stroke-width="1"/>
+    <path d="M18 38 Q14 30 20 22 Q26 14 32 14 Q38 14 44 22 Q50 30 46 38 Q40 32 32 32 Q24 32 18 38Z" fill="#1a1a2e" stroke="#3030a0" stroke-width="1.5"/>
+    <path d="M20 18 Q26 8 32 12 Q38 8 44 18 Q42 22 32 22 Q22 22 20 18Z" fill="#0a0a18" stroke="#3030a0" stroke-width="1.5"/>
+    <circle cx="32" cy="30" r="12" fill="#f5d090" stroke="#c08040" stroke-width="1.5"/>
+    <circle cx="26" cy="28" r="3.5" fill="#fff"/>
+    <circle cx="38" cy="28" r="3.5" fill="#fff"/>
+    <circle cx="27" cy="28" r="2" fill="#2a1a0a"/>
+    <circle cx="39" cy="28" r="2" fill="#2a1a0a"/>
+    <circle cx="27.7" cy="27.3" r="0.8" fill="#fff"/>
+    <circle cx="39.7" cy="27.3" r="0.8" fill="#fff"/>
+    <path d="M28 34 Q32 37 36 34" stroke="#c08040" stroke-width="1.5" fill="none"/>
+    <path d="M29 24 Q32 22 35 24" stroke="#806030" stroke-width="1" fill="none"/>
+    <path d="M30 20 L32 14" stroke="#f5d090" stroke-width="1.5"/>
+    <path d="M28 20 L25 15 M34 20 L37 15" stroke="#f5d090" stroke-width="1"/>
+    <polygon points="30,13 32,8 34,13 29,11 35,11" fill="#e8d000" stroke="#a09000" stroke-width="0.8"/>
+    <path d="M50 36 Q54 30 58 38" stroke="#e8e870" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <circle cx="58" cy="39" r="2" fill="#e8e870" opacity="0.9"/>
+    <path d="M48 44 Q52 46 50 52" stroke="#a0a0e0" stroke-width="1.5" fill="none"/>
+    <circle cx="49.5" cy="53" r="1.5" fill="#a0a0e0" opacity="0.8"/>
+  </svg>`,
+
+  peri: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="grad-wing1" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#e0f0ff" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#80c0ff" stop-opacity="0.4"/>
+      </linearGradient>
+      <linearGradient id="grad-wing2" x1="1" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#ffe0f0" stop-opacity="0.9"/>
+        <stop offset="100%" stop-color="#ff80c0" stop-opacity="0.4"/>
+      </linearGradient>
+    </defs>
+    <ellipse cx="10" cy="30" rx="14" ry="18" fill="url(#grad-wing1)" stroke="#60a0e0" stroke-width="1" opacity="0.85"/>
+    <ellipse cx="8" cy="42" rx="10" ry="12" fill="url(#grad-wing1)" stroke="#60a0e0" stroke-width="0.8" opacity="0.7"/>
+    <ellipse cx="54" cy="30" rx="14" ry="18" fill="url(#grad-wing2)" stroke="#e060a0" stroke-width="1" opacity="0.85"/>
+    <ellipse cx="56" cy="42" rx="10" ry="12" fill="url(#grad-wing2)" stroke="#e060a0" stroke-width="0.8" opacity="0.7"/>
+    <path d="M22 42 Q20 52 24 58 L32 58 L40 58 Q44 52 42 42 Q38 36 32 34 Q26 36 22 42Z" fill="#d070c0" stroke="#a04090" stroke-width="1.5"/>
+    <path d="M24 42 Q28 38 32 38 Q36 38 40 42" fill="none" stroke="#e090d0" stroke-width="1"/>
+    <circle cx="32" cy="30" r="13" fill="#fde8c0" stroke="#c09060" stroke-width="1.5"/>
+    <circle cx="25" cy="27" r="3.5" fill="#fff"/>
+    <circle cx="39" cy="27" r="3.5" fill="#fff"/>
+    <circle cx="26" cy="27" r="2" fill="#5a2080"/>
+    <circle cx="40" cy="27" r="2" fill="#5a2080"/>
+    <circle cx="26.7" cy="26.3" r="0.8" fill="#fff"/>
+    <circle cx="40.7" cy="26.3" r="0.8" fill="#fff"/>
+    <ellipse cx="28" cy="32" rx="2" ry="1.2" fill="#ff9090"/>
+    <ellipse cx="36" cy="32" rx="2" ry="1.2" fill="#ff9090"/>
+    <path d="M27 35 Q32 38 37 35" stroke="#c06090" stroke-width="1.5" fill="none"/>
+    <polygon points="32,14 30,20 34,20" fill="#ffe040" stroke="#c0a020" stroke-width="1"/>
+    <circle cx="44" cy="16" r="2" fill="#ffe040" opacity="0.9"/>
+    <circle cx="20" cy="20" r="1.5" fill="#ff80ff" opacity="0.8"/>
+    <circle cx="48" cy="28" r="1.5" fill="#80ffff" opacity="0.8"/>
+  </svg>`,
+
+  tavsan: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="22" cy="12" rx="6" ry="16" fill="#e8ddd0" stroke="#a09080" stroke-width="1.5"/>
+    <ellipse cx="42" cy="12" rx="6" ry="16" fill="#e8ddd0" stroke="#a09080" stroke-width="1.5"/>
+    <ellipse cx="22" cy="12" rx="3" ry="12" fill="#f0a0a8"/>
+    <ellipse cx="42" cy="12" rx="3" ry="12" fill="#f0a0a8"/>
+    <circle cx="32" cy="36" r="20" fill="#e8ddd0" stroke="#a09080" stroke-width="1.5"/>
+    <ellipse cx="32" cy="40" rx="13" ry="9" fill="#f5f0eb"/>
+    <circle cx="24" cy="30" r="4.5" fill="#fff"/>
+    <circle cx="40" cy="30" r="4.5" fill="#fff"/>
+    <circle cx="25" cy="30" r="2.5" fill="#ff4488"/>
+    <circle cx="41" cy="30" r="2.5" fill="#ff4488"/>
+    <circle cx="25.8" cy="29.2" r="1" fill="#fff"/>
+    <circle cx="41.8" cy="29.2" r="1" fill="#fff"/>
+    <ellipse cx="32" cy="38" rx="5" ry="3.5" fill="#f0a0a8"/>
+    <path d="M29 42 Q32 46 35 42" stroke="#a09080" stroke-width="1.5" fill="none"/>
+    <line x1="20" y1="40" x2="8" y2="38" stroke="#c0b0a0" stroke-width="1.2"/>
+    <line x1="20" y1="42" x2="8" y2="43" stroke="#c0b0a0" stroke-width="1.2"/>
+    <line x1="44" y1="40" x2="56" y2="38" stroke="#c0b0a0" stroke-width="1.2"/>
+    <line x1="44" y1="42" x2="56" y2="43" stroke="#c0b0a0" stroke-width="1.2"/>
+  </svg>`
+};
+
 const AVATARS = [
-  { id: 'panda',     emoji: '🐼', label: 'Panda' },
-  { id: 'unicorn',   emoji: '🦄', label: 'Unicorn' },
-  { id: 'koala',     emoji: '🐨', label: 'Koala' },
-  { id: 'sincap',    emoji: '🐿️', label: 'Sincap' },
-  { id: 'gokkusagi', emoji: '🌈', label: 'Gökkuşağı' },
-  { id: 'ejder',     emoji: '🐉', label: 'Ejderha' },
-  { id: 'kalp',      emoji: '💖', label: 'Renkli Kalp' },
-  { id: 'harry',     emoji: '🧙', label: 'Harry Potter' },
-  { id: 'peri',      emoji: '🧚', label: 'Peri' },
-  { id: 'tavsan',    emoji: '🐰', label: 'Tavşan' },
+  { id: 'panda',    label: 'Panda' },
+  { id: 'unicorn',  label: 'Unicorn' },
+  { id: 'koala',    label: 'Koala' },
+  { id: 'sincap',   label: 'Sincap' },
+  { id: 'sovalye',  label: 'Şövalye' },
+  { id: 'ejder',    label: 'Ejderha' },
+  { id: 'samuray',  label: 'Samuray' },
+  { id: 'harry',    label: 'Büyücü' },
+  { id: 'peri',     label: 'Peri' },
+  { id: 'tavsan',   label: 'Tavşan' },
 ];
 
 const GAME_CHOICES = {
@@ -903,12 +1278,23 @@ let myChosenId = null;
 let targetScore = 7;
 let isResolvingRound = false;
 
-// Avatar grid
+function getAvatarSvg(id, size='32px') {
+  const svg = AVATAR_SVGS[id];
+  if (!svg) return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="28" fill="#333"/></svg>`;
+  return `<span style="display:inline-flex;width:${size};height:${size};vertical-align:middle">${svg}</span>`;
+}
+
+// Legacy compatibility
+function getAvatarEmoji(id) {
+  return getAvatarSvg(id, '28px');
+}
+
+// Avatar grid - getAvatarSvg tanımlandıktan sonra çalıştır
 const avatarGrid = document.getElementById('avatar-grid');
 AVATARS.forEach(a => {
   const btn = document.createElement('button');
   btn.className = 'avatar-btn';
-  btn.textContent = a.emoji;
+  btn.innerHTML = getAvatarSvg(a.id, '38px');
   btn.title = a.label;
   btn.onclick = () => {
     document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('selected'));
@@ -918,17 +1304,41 @@ AVATARS.forEach(a => {
   avatarGrid.appendChild(btn);
 });
 
-function getAvatarEmoji(id) {
-  return (AVATARS.find(a => a.id === id) || { emoji: '👤' }).emoji;
-}
-
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
 
-function randCode() {
-  return Math.random().toString(36).substring(2, 7).toUpperCase();
+const ROOM_NAMES = [
+  'KIZIL-EJDER','ALTIN-PANDA','GECE-UNICORN','MAVI-KOALA','NEON-SINCAP',
+  'YILDIZ-PERI','LAZER-TAVSAN','KRISTAL-KURT','PLAZMA-ASLAN','ROKET-KAPLAN',
+  'GIZEMLI-BALIK','KOZMIK-KARTAL','ELEKTRIK-AYISI','FIRTINA-TIMSAH','BRONZ-MAYMUN',
+  'DEMIR-PENGUEN','ALEV-SAMPIYONU','GUMUS-SAHIN','PAMUK-ZOMBI','PURPURA-NINJA',
+  'SICAK-METEOR','DONMUS-VOLKAN','UZAY-KORSAN','SEKER-CANAVAR','TURBO-SAMURAY',
+  'TITAN-GOBLIN','ELMAS-VAMPIR','KARANLIK-ELF','PARLAK-TROLL','SISLI-ROBOT',
+  'ATES-CADISI','BUZLU-SEHZADE','KARTAL-YUVASI','ASLAN-KAPISI','EJDER-ADASI',
+  'YILDIZ-KUYUSU','GECE-KALESI','NEON-SEHRI','LAZER-TEPESI','KRISTAL-OVASIN',
+  'PLAZMA-KOYU','ROKET-VADISI','GIZEMLI-ORMAN','KOZMIK-GOLET','ELEKTRIK-BAHCE',
+  'FIRTINA-LIMANI','BRONZ-KULE','DEMIR-KOPRU','ALEV-SARAY','GUMUS-KAYA',
+  'PAMUK-CEVRE','PURPURA-MEYDAN','SICAK-SAHIL','DONMUS-ZIT','UZAY-MERKEZ',
+  'SEKER-PARK','TURBO-ALAN','TITAN-BARIS','ELMAS-HALI','KARANLIK-YOLU',
+  'PARLAK-KOY','SISLI-DERE','ATES-GEZI','BUZLU-ROTA','KARTAL-INISI',
+  'ASLAN-ZIRVESI','EJDER-KUCAGI','YILDIZ-PINARI','GECE-GIRDABI','NEON-IZLEGI',
+  'LAZER-AKINTISI','KRISTAL-FIRTINA','PLAZMA-YOLU','ROKET-AKISI','GIZEMLI-DUMAN',
+  'KOZMIK-CEMBER','ELEKTRIK-SELI','FIRTINA-KAYNAGI','BRONZ-CARPIMI','DEMIR-ATISI',
+  'ALEV-CARPAN','GUMUS-GECESI','PAMUK-YILDIZI','PURPURA-GUNDUZ','SICAK-AKIN',
+  'DONMUS-DERINLIK','UZAY-YANARDAGI','SEKER-DENIZI','TURBO-GIRDABI','TITAN-DALGASI',
+  'ELMAS-UCAN','KARANLIK-DANS','PARLAK-SAVASC','SISLI-CENGE','ATES-YIKICI',
+  'BUZLU-SALDIRI','KARTAL-CILGINI','ASLAN-MUCAHIT','EJDER-EFENDISI','YILDIZ-AVCISI'
+];
+
+async function getAvailableRoomName() {
+  const snap = await db.ref('rooms').once('value');
+  const existing = snap.val() || {};
+  const activeNames = new Set(Object.keys(existing));
+  const available = ROOM_NAMES.filter(n => !activeNames.has(n));
+  if (available.length === 0) return ROOM_NAMES[Math.floor(Math.random() * ROOM_NAMES.length)] + '-' + Math.floor(Math.random()*99);
+  return available[Math.floor(Math.random() * available.length)];
 }
 
 function selectTarget(val, btn) {
@@ -946,63 +1356,92 @@ async function refreshRooms() {
   Object.entries(all).forEach(([code, data]) => {
     if (data.status === 'lobby') {
       const players = data.players || {};
-      const onlineCount = Object.values(players).filter(p => p.online !== false).length;
-      if (onlineCount > 0 && onlineCount < MAX_PLAYERS) open.push({ code, count: onlineCount });
+      const onlinePlayers = Object.values(players).filter(p => p.online !== false);
+      if (onlinePlayers.length > 0 && onlinePlayers.length < MAX_PLAYERS) {
+        open.push({ code, count: onlinePlayers.length, players: onlinePlayers });
+      }
     }
   });
   list.innerHTML = '';
   if (open.length === 0) { list.innerHTML = '<div class="room-empty">ŞU AN AÇIK ODA YOK</div>'; return; }
   open.forEach(r => {
+    const avatars = r.players.slice(0,4).map(p => getAvatarSvg(p.avatar,'18px')).join('');
     const div = document.createElement('div');
     div.className = 'room-item';
-    div.innerHTML = `<div><div class="room-code-text">${r.code}</div><div class="room-info">${r.count}/${MAX_PLAYERS} OYUNCU</div></div><button class="btn-join-sm" onclick="quickJoin('${r.code}')">KATIL →</button>`;
+    div.innerHTML = `
+      <div>
+        <div class="room-code-text">${r.code}</div>
+        <div class="room-info">${avatars} &nbsp;${r.count}/${MAX_PLAYERS} OYUNCU</div>
+      </div>
+      <button class="btn-join-sm" onclick="quickJoin('${r.code}')">KATIL →</button>`;
     list.appendChild(div);
   });
 }
 
 function quickJoin(code) {
-  const name = document.getElementById('input-name').value.trim();
-  const err = document.getElementById('join-error');
-  if (!name) { err.textContent = '✕ ÖNCE İSMİNİ GİR!'; document.getElementById('input-name').focus(); return; }
-  if (!myAvatar) { err.textContent = '✕ ÖNCE BİR AVATAR SEÇ!'; return; }
-  document.getElementById('input-room').value = code;
-  joinGame();
+  joinRoom(code);
 }
 
 refreshRooms();
 
-async function joinGame() {
+function validatePlayerInfo() {
   const name = document.getElementById('input-name').value.trim();
-  const room = document.getElementById('input-room').value.trim().toUpperCase();
   const err = document.getElementById('join-error');
   err.textContent = '';
-  if (!name) { err.textContent = '✕ İSİM GİRMEDEN DEVAM EDEMEZSİN'; return; }
-  if (!myAvatar) { err.textContent = '✕ BİR AVATAR SEÇMELİSİN'; return; }
+  if (!name) { err.textContent = '✕ İSİM GİRMEDEN DEVAM EDEMEZSİN'; return false; }
+  if (!myAvatar) { err.textContent = '✕ BİR AVATAR SEÇMELİSİN'; return false; }
+  return true;
+}
+
+async function createRoom() {
+  if (!validatePlayerInfo()) return;
+  const name = document.getElementById('input-name').value.trim();
+  const err = document.getElementById('join-error');
+  try {
+    myId = 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+    myName = name;
+    roomCode = await getAvailableRoomName();
+    roomRef = db.ref('rooms/' + roomCode);
+
+    const players = {};
+    players[myId] = { name: myName, avatar: myAvatar, score: 0, online: true };
+    await roomRef.set({ players, status: 'lobby', round: 0, hostId: myId, targetScore: null });
+    roomRef.child('players/' + myId + '/online').onDisconnect().set(false);
+
+    document.getElementById('score-bar').classList.add('visible');
+    document.getElementById('lobby-code').textContent = roomCode;
+    showScreen('screen-lobby');
+    listenRoom();
+  } catch(e) {
+    err.textContent = '✕ ODA OLUŞTURULAMADI, TEKRAR DENE';
+    myId = null; roomRef = null; roomCode = '';
+  }
+}
+
+async function joinRoom(code) {
+  if (!validatePlayerInfo()) return;
+  const name = document.getElementById('input-name').value.trim();
+  const err = document.getElementById('join-error');
 
   myId = 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
   myName = name;
-  roomCode = room || randCode();
+  roomCode = code;
   roomRef = db.ref('rooms/' + roomCode);
 
   const snap = await roomRef.once('value');
   const data = snap.val();
 
-  if (data && data.status === 'playing') { err.textContent = '✕ ODA OYUN OYNUYOR'; return; }
+  if (!data) { err.textContent = '✕ ODA BULUNAMADI'; myId = null; roomRef = null; return; }
+  if (data.status === 'playing') { err.textContent = '✕ ODA OYUN OYNUYOR'; myId = null; roomRef = null; return; }
 
-  const rawPlayers = data ? (data.players || {}) : {};
+  const rawPlayers = data.players || {};
   const players = {};
   Object.keys(rawPlayers).forEach(k => { if (rawPlayers[k].online !== false) players[k] = rawPlayers[k]; });
   const onlineCount = Object.keys(players).length;
-  if (data && onlineCount >= MAX_PLAYERS) { err.textContent = `✕ ODA DOLU (MAKS ${MAX_PLAYERS})`; return; }
+  if (onlineCount >= MAX_PLAYERS) { err.textContent = `✕ ODA DOLU (MAKS ${MAX_PLAYERS})`; myId = null; roomRef = null; return; }
 
-  const isNewRoom = !data || onlineCount === 0;
   players[myId] = { name: myName, avatar: myAvatar, score: 0, online: true };
-
-  if (isNewRoom) {
-    await roomRef.set({ players, status: 'lobby', round: 0, hostId: myId, targetScore: null });
-  } else {
-    await roomRef.child('players').update(players);
-  }
+  await roomRef.child('players').update({ [myId]: players[myId] });
   roomRef.child('players/' + myId + '/online').onDisconnect().set(false);
 
   document.getElementById('score-bar').classList.add('visible');
@@ -1032,8 +1471,9 @@ function listenRoom() {
       renderLobby(data);
     } else if (data.status === 'playing') {
       const choices = data.choices || {};
-      const playerKeys = Object.keys(players);
-      const allChose = playerKeys.length > 0 && playerKeys.every(k => choices[k] && choices[k] !== false);
+      // choices sadece online oyuncular için var, sadece onları kontrol et
+      const choiceKeys = Object.keys(choices);
+      const allChose = choiceKeys.length > 0 && choiceKeys.every(k => choices[k] && choices[k] !== false);
       if (allChose && !isResolvingRound) {
         const sortedKeys = onlineKeys.slice().sort();
         if (sortedKeys[0] === myId) {
@@ -1059,7 +1499,7 @@ function renderLobby(data) {
     const p = players[k];
     const div = document.createElement('div');
     div.className = 'player-item';
-    div.innerHTML = `<span style="font-size:1.1rem">${getAvatarEmoji(p.avatar)}</span><span>${p.name}</span>${k === myId ? '<span style="margin-left:auto;font-size:0.6rem;color:#555;letter-spacing:1px">SEN</span>' : ''}`;
+    div.innerHTML = `${getAvatarSvg(p.avatar,'28px')}<span style="margin-left:6px">${p.name}</span>${k === myId ? '<span style="margin-left:auto;font-size:0.6rem;color:#555;letter-spacing:1px">SEN</span>' : ''}`;
     list.appendChild(div);
   });
   for (let i = onlinePlayerKeys.length; i < MAX_PLAYERS; i++) {
@@ -1104,7 +1544,7 @@ function renderPick(data) {
   const myChoice = choices[myId];
   const players = data.players || {};
   const total = Object.keys(players).length;
-  const done = Object.values(choices).filter(v => v !== null).length;
+  const done = Object.values(choices).filter(v => v && v !== false).length;
   const effectiveChoice = (myChoice && myChoice !== false) ? myChoice : myChosenId;
 
   if (effectiveChoice) {
@@ -1116,10 +1556,10 @@ function renderPick(data) {
     const wList = document.getElementById('waiting-players');
     wList.innerHTML = '';
     Object.keys(players).forEach(k => {
-      const did = choices[k] !== null && choices[k] !== undefined;
+      const did = choices[k] && choices[k] !== false;
       const div = document.createElement('div');
       div.className = 'wait-player' + (did ? ' done' : '');
-      div.innerHTML = `<span style="font-size:1rem">${getAvatarEmoji(players[k].avatar)}</span><span>${players[k].name}</span><span style="margin-left:auto;font-size:0.8rem">${did ? '✓' : '…'}</span>`;
+      div.innerHTML = `${getAvatarSvg(players[k].avatar,'24px')}<span style="margin-left:6px">${players[k].name}</span><span style="margin-left:auto;font-size:0.8rem">${did ? '✓' : '…'}</span>`;
       wList.appendChild(div);
     });
     document.getElementById('waiting-count').textContent = `${done} / ${total} OYUNCU SEÇTİ`;
@@ -1131,7 +1571,7 @@ function renderPick(data) {
       if (b) b.className = 'game-btn';
     });
     const me = players[myId];
-    document.getElementById('pick-who').textContent = me ? `${getAvatarEmoji(me.avatar)} ${me.name.toUpperCase()}` : 'SENİN SIRAN';
+    document.getElementById('pick-who').innerHTML = me ? `${getAvatarSvg(me.avatar,'32px')} <span style="vertical-align:middle">${me.name.toUpperCase()}</span>` : 'SENİN SIRAN';
     showScreen('screen-pick');
   }
 }
@@ -1150,9 +1590,11 @@ async function resolveRound(data) {
   if (!roomRef) return;
   const choices = data.choices;
   const players = data.players;
-  const keys = Object.keys(players);
+  // Sadece choices içindeki (online) oyuncularla çalış
+  const keys = Object.keys(choices).filter(k => choices[k] && choices[k] !== false);
+  const allKeys = Object.keys(players);
   const counts = { tas: 0, kagit: 0, makas: 0 };
-  keys.forEach(k => { if (choices[k] && choices[k] !== false) counts[choices[k]]++; });
+  keys.forEach(k => { counts[choices[k]]++; });
   const used = Object.entries(counts).filter(([, c]) => c > 0);
 
   let winnerSymbol = null, isDraw = false;
@@ -1176,7 +1618,7 @@ async function resolveRound(data) {
 
   const winnerKeys = winnerSymbol ? keys.filter(k => choices[k] === winnerSymbol) : ['__none__'];
   const newPlayers = {};
-  keys.forEach(k => {
+  allKeys.forEach(k => {
     newPlayers[k] = { ...players[k], score: (players[k].score || 0) + (winnerKeys.includes(k) ? 1 : 0) };
   });
 
@@ -1203,8 +1645,8 @@ function renderResult(data) {
     const div = document.createElement('div');
     div.className = 'result-card-player' + (isWinner ? ' winner' : '');
     const avatarHtml = isWinner
-      ? `<div class="avatar-win-wrap"><span class="win-${players[k].avatar}">${getAvatarEmoji(players[k].avatar)}</span></div>`
-      : `<div class="rcp-avatar">${getAvatarEmoji(players[k].avatar)}</div>`;
+      ? `<div class="avatar-win-wrap">${getAvatarSvg(players[k].avatar, '48px')}</div>`
+      : `<div class="rcp-avatar">${getAvatarSvg(players[k].avatar, '32px')}</div>`;
     div.innerHTML = `${avatarHtml}<div class="rcp-name">${players[k].name}</div><div class="rcp-choice">${gc.emoji}</div>`;
     rp.appendChild(div);
   });
@@ -1236,7 +1678,8 @@ function renderResult(data) {
   } else {
     const gc = (winnerSymbol && GAME_CHOICES[winnerSymbol]) ? GAME_CHOICES[winnerSymbol] : { label: '' };
     hl.textContent = `${gc.label.toUpperCase()} KAZANDI`; hl.className = 'result-headline lose';
-    const winNames = winnerKeys.map(k => players[k] ? players[k].name.toUpperCase() : '').filter(Boolean).join(', ');
+    const validWinners = winnerKeys.filter(k => players[k]);
+    const winNames = validWinners.map(k => players[k].name.toUpperCase()).join(', ');
     sub.textContent = `${winNames} PUAN ALDI`;
   }
 
@@ -1249,15 +1692,82 @@ function renderResult(data) {
 function renderGameOver(players, target) {
   const sorted = Object.values(players).sort((a, b) => (b.score || 0) - (a.score || 0));
   const winner = sorted[0];
+
+  // Fullscreen win overlay göster
+  showWinOverlay(winner, sorted, players);
+}
+
+function showWinOverlay(winner, sorted, players) {
+  const overlay = document.getElementById('win-overlay');
+  document.getElementById('win-overlay-name').textContent = winner.name.toUpperCase() + ' KAZANDI!';
+
+  // Avatar stage - ekranın %50 boyutunda
+  const stage = document.getElementById('win-avatar-stage');
+  stage.innerHTML = '';
+  const svgEl = document.createElement('div');
+  svgEl.style.cssText = 'width:100%;height:100%;';
+  svgEl.innerHTML = AVATAR_SVGS[winner.avatar] || '';
+  const svgNode = svgEl.querySelector('svg');
+  if (svgNode) {
+    svgNode.style.width = '100%';
+    svgNode.style.height = '100%';
+    svgNode.classList.add('champion-' + winner.avatar);
+  }
+  stage.appendChild(svgEl);
+
+  // Confetti patlaması
+  spawnConfetti();
+
+  overlay.classList.add('show');
+
+  // Overlay kapandıktan sonra gameover ekranını hazırla
+  overlay._winner = winner;
+  overlay._sorted = sorted;
+  overlay._players = players;
+}
+
+function spawnConfetti() {
+  const colors = ['#F5FF4F','#FF4F0D','#0DFFB0','#ffffff','#ff80ff','#80ffff'];
+  // Eski confettiyi temizle
+  document.querySelectorAll('.confetti-particle').forEach(p => p.remove());
+  for (let i = 0; i < 60; i++) {
+    const p = document.createElement('div');
+    p.className = 'confetti-particle';
+    // position:fixed kullan, body'e ekle — vw/vh doğru çalışsın
+    p.style.position = 'fixed';
+    p.style.left = Math.random() * 100 + 'vw';
+    p.style.top = '-20px';
+    p.style.background = colors[Math.floor(Math.random() * colors.length)];
+    p.style.animationDuration = (1.5 + Math.random() * 3) + 's';
+    p.style.animationDelay = (Math.random() * 2) + 's';
+    p.style.width = (6 + Math.random() * 10) + 'px';
+    p.style.height = (6 + Math.random() * 10) + 'px';
+    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+    p.style.zIndex = '9999';
+    p.style.pointerEvents = 'none';
+    document.body.appendChild(p);
+  }
+}
+
+function closeWinOverlay() {
+  const overlay = document.getElementById('win-overlay');
+  overlay.classList.remove('show');
+  document.querySelectorAll('.confetti-particle').forEach(p => p.remove());
+
+  // Şimdi gameover ekranını göster
+  const winner = overlay._winner;
+  const sorted = overlay._sorted;
+  if (!winner) return;
+
   const goEl = document.getElementById('gameover-winner');
-  goEl.innerHTML = `<div class="avatar-win-wrap" style="font-size:2.5rem;display:inline-block;margin-right:10px"><span class="win-${winner.avatar}">${getAvatarEmoji(winner.avatar)}</span></div><span>${winner.name.toUpperCase()} KAZANDI!</span>`;
+  goEl.innerHTML = getAvatarSvg(winner.avatar, '36px') + `<span style="margin-left:8px">${winner.name.toUpperCase()} KAZANDI!</span>`;
   const podium = document.getElementById('gameover-podium');
   podium.innerHTML = '';
   const medals = ['🥇', '🥈', '🥉'];
   sorted.forEach((p, i) => {
     const div = document.createElement('div');
     div.className = 'podium-row';
-    div.innerHTML = `<span class="podium-rank">${medals[i] || (i + 1) + '.'}</span><span style="font-size:1.1rem">${getAvatarEmoji(p.avatar)}</span><span style="letter-spacing:1px">${p.name}</span><span class="podium-score">${p.score || 0} PT</span>`;
+    div.innerHTML = `<span class="podium-rank">${medals[i] || (i+1)+'.'}</span>${getAvatarSvg(p.avatar,'24px')}<span style="letter-spacing:1px;margin-left:6px">${p.name}</span><span class="podium-score">${p.score || 0} PT</span>`;
     podium.appendChild(div);
   });
   showScreen('screen-gameover');
@@ -1284,7 +1794,7 @@ function updateScoreBar(players, targetSc) {
   Object.values(players).filter(p => p.online !== false).forEach(p => {
     const cell = document.createElement('div');
     cell.className = 'score-cell';
-    cell.innerHTML = `<div class="sc-av">${getAvatarEmoji(p.avatar)}</div><div class="sc-nm">${p.name}</div><div class="sc-pt">${p.score || 0}</div>`;
+    cell.innerHTML = `<div class="sc-av">${getAvatarSvg(p.avatar, '24px')}</div><div class="sc-nm">${p.name}</div><div class="sc-pt">${p.score || 0}</div>`;
     sb.appendChild(cell);
   });
 }
@@ -1300,7 +1810,7 @@ async function playAgain() {
   const sortedOnline = onlineKeys.slice().sort();
   if (sortedOnline[0] === myId) {
     const choices = {};
-    keys.forEach(k => { choices[k] = null; });
+    keys.forEach(k => { choices[k] = false; });
     await roomRef.update({ status: 'playing', choices, round: (data.round || 0) + 1 });
   }
 }
@@ -1312,8 +1822,12 @@ function resetLocalState() {
   document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('score-bar').classList.remove('visible');
   document.getElementById('input-name').value = '';
-  document.getElementById('input-room').value = '';
+  const roomInput = document.getElementById('input-room');
+  if (roomInput) roomInput.value = '';
   document.getElementById('join-error').textContent = '';
+  document.querySelectorAll('.confetti-particle').forEach(p => p.remove());
+  const wo = document.getElementById('win-overlay');
+  if (wo) wo.classList.remove('show');
 }
 
 async function leaveGame() {
