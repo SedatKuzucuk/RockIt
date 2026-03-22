@@ -1144,8 +1144,8 @@ input[type="text"]::placeholder { color: #444; }
       </div>
       <div class="result-players" id="result-players"></div>
       <div class="summary-strip" id="summary-strip"></div>
-      <button class="btn btn-yellow" id="btn-play-again" style="display:none;margin-bottom:8px" onclick="playAgain()">TEKRAR OYNA →</button>
-      <p id="btn-wait-host" style="display:none;font-size:0.65rem;color:#555;letter-spacing:2px;text-align:center;margin-bottom:8px">ODA SAHİBİ YENİ TURU BAŞLATACAK...</p>
+      <button class="btn btn-yellow" id="btn-play-again" style="display:none;margin-bottom:8px" onclick="playAgain()">YENİ TURU BAŞLAT →</button>
+      <p id="btn-wait-host" style="display:none;font-size:0.65rem;color:#555;letter-spacing:2px;text-align:center;padding:12px;margin-bottom:8px">⏳ HOST YENİ TURU BAŞLATMASI BEKLENİYOR...</p>
       <button class="btn btn-ghost" onclick="leaveGame()">ODADAN ÇIK</button>
     </div>
   </div>
@@ -1720,20 +1720,19 @@ function listenRoom() {
       // choices sadece online oyuncular için var, sadece onları kontrol et
       const choiceKeys = Object.keys(choices);
       const allChose = choiceKeys.length > 0 && choiceKeys.every(k => choices[k] && choices[k] !== false);
-      if (allChose) {
-        // En küçük ID'li oyuncu sonucu hesaplar
-        if (!isResolvingRound) {
-          const sortedKeys = onlineKeys.slice().sort();
-          if (sortedKeys[0] === myId) {
-            isResolvingRound = true;
-            resolveRound(data).finally(() => { isResolvingRound = false; });
-          }
+      if (allChose && !isResolvingRound) {
+        // Sadece en küçük ID'li online oyuncu sonucu hesaplar
+        const sortedKeys = onlineKeys.slice().sort();
+        if (sortedKeys[0] === myId) {
+          isResolvingRound = true;
+          resolveRound(data).finally(() => { isResolvingRound = false; });
         }
-        // Tüm oyuncular seçimini yaptı — bekleme ekranı göster
-        renderPick(data);
-      } else {
+        // Diğerleri result Firebase'den gelince görecek — burada dur
+      } else if (!allChose) {
+        // Henüz herkes seçmedi — seçim/bekleme ekranı göster
         renderPick(data);
       }
+      // allChose && isResolvingRound: zaten hesaplanıyor, bekle
     } else if (data.status === 'result') {
       renderResult(data);
     }
@@ -1948,8 +1947,11 @@ function renderResult(data) {
   // Sadece host'a TEKRAR OYNA butonu göster
   const playBtn = document.getElementById('btn-play-again');
   const waitMsg = document.getElementById('btn-wait-host');
-  const onlineKs = Object.keys(players).filter(k => players[k].online !== false).sort();
-  const isHost = data.hostId ? (data.hostId === myId) : (onlineKs[0] === myId);
+  const onlineKs = Object.keys(players)
+    .filter(k => players[k] && players[k].online !== false)
+    .sort();
+  // hostId'ye göre kontrol, yoksa en küçük ID host sayılır
+  const isHost = data.hostId ? (data.hostId === myId) : (onlineKs.length > 0 && onlineKs[0] === myId);
   if (playBtn) playBtn.style.display = isHost ? 'block' : 'none';
   if (waitMsg) waitMsg.style.display = isHost ? 'none' : 'block';
 
