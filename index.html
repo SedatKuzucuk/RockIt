@@ -2,224 +2,857 @@
 <html lang="tr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>RockIt!</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    font-family: 'Nunito', sans-serif;
-    background: #1a1a2e;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    color: white;
-    gap: 16px;
-  }
-  h1 { font-size: 1.6rem; font-weight: 900; text-align: center; }
-  .subtitle { font-size: 0.8rem; color: #a0aec0; text-align: center; margin-top: -10px; }
-  .screen { display: none; flex-direction: column; align-items: center; gap: 14px; width: 100%; max-width: 420px; }
-  .screen.active { display: flex; }
-  .card { background: #16213e; border-radius: 24px; padding: 22px 20px; width: 100%; box-shadow: 0 4px 20px rgba(0,0,0,0.3); text-align: center; }
-  .card h2 { font-size: 1.15rem; font-weight: 900; margin-bottom: 8px; }
-  .card p { font-size: 0.83rem; color: #a0aec0; line-height: 1.6; margin-bottom: 14px; }
-  input[type="text"] {
-    width: 100%; padding: 12px 16px; border-radius: 14px;
-    border: 2px solid #0f3460; background: #0f3460; color: white;
-    font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 700;
-    outline: none; margin-bottom: 10px; text-align: center;
-  }
-  input[type="text"]::placeholder { color: #4a5568; }
-  input[type="text"]:focus { border-color: #667eea; }
-  .btn { width: 100%; padding: 13px; border-radius: 14px; border: none; font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 900; cursor: pointer; transition: all 0.15s; }
-  .btn-primary { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
-  .btn-primary:hover { opacity: 0.9; transform: translateY(-2px); }
-  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-  .btn-ghost { background: none; border: 2px solid #4a5568; color: #a0aec0; margin-top: 8px; }
-  .btn-ghost:hover { border-color: #f56565; color: #f56565; }
-  .btn-join { padding: 7px 16px; border-radius: 10px; border: none; font-family: 'Nunito', sans-serif; font-size: 0.82rem; font-weight: 900; cursor: pointer; background: linear-gradient(135deg, #667eea, #764ba2); color: white; white-space: nowrap; }
+:root {
+  --yellow: #F5FF4F;
+  --orange: #FF4F0D;
+  --green: #0DFFB0;
+  --white: #F0EDE4;
+  --black: #0A0A0A;
+  --gray: #1A1A1A;
+  --gray2: #2A2A2A;
+  --gray3: #3A3A3A;
+}
 
-  /* AVATAR */
-  .section-label { font-size: 0.72rem; color: #a0aec0; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 7px; text-align: left; width: 100%; }
-  .avatar-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; width: 100%; margin-bottom: 12px; }
-  .avatar-btn {
-    aspect-ratio: 1; border-radius: 13px; border: 2px solid transparent;
-    background: #0f3460; font-size: 1.6rem; cursor: pointer; transition: all 0.15s;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .avatar-btn:hover { transform: translateY(-3px); border-color: #667eea; }
-  .avatar-btn.selected { border-color: #ffd700; background: #2d3a6a; transform: scale(1.08); box-shadow: 0 0 0 3px rgba(255,215,0,0.25); }
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-  /* ODA LİSTESİ */
-  .rooms-list { width: 100%; display: flex; flex-direction: column; gap: 8px; max-height: 260px; overflow-y: auto; }
-  .room-item { display: flex; align-items: center; justify-content: space-between; padding: 11px 14px; border-radius: 14px; background: #0f3460; gap: 10px; }
-  .room-left { text-align: left; }
-  .room-code-text { font-weight: 900; font-size: 1rem; color: #667eea; letter-spacing: 2px; }
-  .room-info { font-size: 0.72rem; color: #a0aec0; margin-top: 2px; }
-  .room-empty { color: #4a5568; font-size: 0.85rem; padding: 16px 0; }
+body {
+  font-family: 'DM Mono', monospace;
+  background: var(--black);
+  min-height: 100vh;
+  color: var(--white);
+  overflow-x: hidden;
+}
 
-  /* LOBI */
-  .lobby-code { font-size: 2rem; font-weight: 900; letter-spacing: 8px; color: #667eea; margin: 8px 0; }
-  .players-list { width: 100%; }
-  .player-item { display: flex; align-items: center; gap: 9px; padding: 8px 13px; border-radius: 12px; background: #0f3460; margin-bottom: 6px; font-weight: 700; font-size: 0.87rem; }
-  .player-dot { width: 9px; height: 9px; border-radius: 50%; background: #68d391; flex-shrink: 0; }
-  .player-dot.off { background: #4a5568; }
+/* GRAIN OVERLAY */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
 
-  /* OYUN */
-  .game-choices { display: flex; gap: 12px; justify-content: center; width: 100%; margin: 6px 0; }
-  .game-btn { flex: 1; aspect-ratio: 1; border-radius: 20px; border: 3px solid transparent; background: #0f3460; font-size: 2.6rem; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; max-width: 110px; }
-  .game-btn:hover { transform: translateY(-5px); border-color: #667eea; background: #16213e; }
-  .game-btn:active { transform: scale(0.95); }
-  .game-btn.selected { border-color: #ffd700; background: #2d3a6a; transform: scale(1.08); }
+/* SCROLLING TICKER */
+.ticker-wrap {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 32px;
+  background: var(--yellow);
+  overflow: hidden;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+}
+.ticker {
+  display: flex;
+  gap: 0;
+  animation: ticker 18s linear infinite;
+  white-space: nowrap;
+}
+.ticker span {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 15px;
+  color: var(--black);
+  padding: 0 24px;
+  letter-spacing: 2px;
+}
+@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-  /* BEKLEME */
-  .waiting-dots { display: flex; gap: 6px; justify-content: center; margin: 8px 0; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: #667eea; animation: pulse 1.2s infinite; }
-  .dot:nth-child(2) { animation-delay: 0.2s; }
-  .dot:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes pulse { 0%,80%,100%{ opacity: 0.3; transform: scale(0.8); } 40%{ opacity: 1; transform: scale(1); } }
+/* SCOREBOARD BAR */
+.score-bar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--gray);
+  border-top: 2px solid var(--gray2);
+  display: none;
+  align-items: stretch;
+  z-index: 100;
+  min-height: 56px;
+  overflow-x: auto;
+}
+.score-bar.visible { display: flex; }
+.score-cell {
+  flex: 1;
+  min-width: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 4px;
+  border-right: 1px solid var(--gray2);
+  gap: 1px;
+}
+.score-cell:last-child { border-right: none; }
+.score-cell .sc-av { font-size: 1.1rem; line-height: 1; }
+.score-cell .sc-nm { font-size: 0.42rem; letter-spacing: 1px; text-transform: uppercase; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 64px; }
+.score-cell .sc-pt { font-family: 'Bebas Neue'; font-size: 1.4rem; color: var(--yellow); line-height: 1; }
 
-  /* SONUÇ */
-  .result-row { display: flex; justify-content: center; gap: 6px; margin: 10px 0; flex-wrap: wrap; }
-  .result-player { text-align: center; min-width: 52px; }
-  .result-player .pavatar { font-size: 1.7rem; }
-  .result-player .pname { font-size: 0.58rem; color: #a0aec0; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin: 2px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 56px; }
-  .result-player .pchoice { font-size: 1.5rem; }
-  .result-crown { font-size: 0.65rem; color: #ffd700; font-weight: 900; }
+/* MAIN LAYOUT */
+.app {
+  padding-top: 32px;
+  padding-bottom: 64px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
 
-  .result-title { font-size: 1.4rem; font-weight: 900; margin: 8px 0 4px; }
-  .result-title.win { color: #ffd700; }
-  .result-title.draw { color: #ed8936; }
-  .result-title.lose { color: #f56565; }
+/* HEADER */
+.header {
+  width: 100%;
+  padding: 20px 20px 0;
+  text-align: center;
+}
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 4rem;
+  letter-spacing: 4px;
+  color: var(--yellow);
+  line-height: 1;
+  text-shadow: 4px 4px 0 var(--orange);
+  animation: logo-pulse 3s ease-in-out infinite;
+}
+@keyframes logo-pulse {
+  0%, 100% { text-shadow: 4px 4px 0 var(--orange); }
+  50% { text-shadow: 6px 6px 0 var(--orange), -2px -2px 0 var(--green); }
+}
+.logo-sub {
+  font-size: 0.6rem;
+  letter-spacing: 4px;
+  color: #555;
+  text-transform: uppercase;
+  margin-top: -4px;
+}
 
-  /* SKOR */
-  .scoreboard { display: flex; flex-wrap: wrap; background: #16213e; border-radius: 20px; overflow: hidden; width: 100%; max-width: 420px; }
-  .score-item { flex: 1; min-width: 50px; text-align: center; padding: 8px 4px; border-right: 1px solid #0f3460; border-bottom: 1px solid #0f3460; }
-  .score-item:last-child { border-right: none; }
-  .score-avatar { font-size: 1rem; }
-  .score-label { font-size: 0.5rem; color: #a0aec0; font-weight: 700; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 54px; }
-  .score-value { font-size: 1.3rem; font-weight: 900; color: #667eea; }
+/* SCREENS */
+.screen { display: none; width: 100%; max-width: 420px; padding: 20px; flex-direction: column; gap: 12px; }
+.screen.active { display: flex; }
 
-  .badge { display: inline-block; padding: 4px 14px; border-radius: 50px; font-weight: 900; font-size: 0.9rem; background: linear-gradient(135deg, #667eea, #764ba2); margin-bottom: 4px; }
-  .error-msg { color: #f56565; font-size: 0.8rem; margin-bottom: 8px; min-height: 18px; }
-  .score-select-row { display: flex; gap: 7px; justify-content: center; margin-bottom: 12px; }
-  .score-opt { flex: 1; padding: 9px 4px; border-radius: 12px; border: 2px solid transparent; background: #0f3460; color: #a0aec0; font-family: 'Nunito', sans-serif; font-size: 1rem; font-weight: 900; cursor: pointer; transition: all 0.15s; text-align: center; }
-  .score-opt:hover { border-color: #667eea; color: white; }
-  .score-opt.selected { border-color: #ffd700; background: #2d3a6a; color: #ffd700; }
-  .gameover-podium { display: flex; flex-direction: column; gap: 8px; margin: 14px 0; }
-  .podium-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 14px; background: #0f3460; font-weight: 700; }
-  .podium-rank { font-size: 1.3rem; min-width: 32px; text-align: center; }
-  .podium-score { margin-left: auto; font-size: 1.1rem; font-weight: 900; color: #ffd700; }
-  .divider { width: 100%; height: 1px; background: #0f3460; margin: 4px 0 10px; }
+/* PANEL */
+.panel {
+  background: var(--gray);
+  border: 1px solid var(--gray2);
+  padding: 20px;
+  position: relative;
+}
+.panel::before {
+  content: '';
+  position: absolute;
+  top: -1px; left: 12px;
+  width: 40px; height: 3px;
+  background: var(--yellow);
+}
+.panel-title {
+  font-family: 'Bebas Neue';
+  font-size: 1.1rem;
+  letter-spacing: 3px;
+  color: var(--yellow);
+  margin-bottom: 14px;
+  text-transform: uppercase;
+}
 
-  .summary-box { background: #0f3460; border-radius: 14px; padding: 12px 14px; margin-bottom: 12px; text-align: left; width: 100%; }
-  .summary-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 0.83rem; }
-  .summary-row .sym { font-size: 1.1rem; }
-  .summary-row .cnt { font-weight: 900; color: #667eea; min-width: 18px; }
-  .summary-row.winner-row { background: rgba(255,215,0,0.08); border-radius: 8px; padding: 5px 6px; }
-  .summary-row .win-badge { font-size: 0.65rem; color: #ffd700; font-weight: 900; margin-left: auto; }
+/* INPUT */
+input[type="text"] {
+  width: 100%;
+  background: var(--black);
+  border: 1px solid var(--gray3);
+  border-bottom: 2px solid var(--gray3);
+  color: var(--white);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.95rem;
+  padding: 12px 14px;
+  outline: none;
+  margin-bottom: 10px;
+  transition: border-color 0.15s;
+  letter-spacing: 1px;
+}
+input[type="text"]:focus { border-color: var(--yellow); border-bottom-color: var(--yellow); }
+input[type="text"]::placeholder { color: #444; }
+
+/* BUTTONS */
+.btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: 3px;
+  cursor: pointer;
+  transition: all 0.1s;
+  position: relative;
+  overflow: hidden;
+}
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0);
+  transition: background 0.1s;
+}
+.btn:active::after { background: rgba(255,255,255,0.1); }
+.btn-yellow { background: var(--yellow); color: var(--black); box-shadow: 4px 4px 0 var(--orange); }
+.btn-yellow:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--orange); }
+.btn-yellow:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--orange); }
+.btn-yellow:disabled { background: #333; color: #666; box-shadow: none; cursor: not-allowed; transform: none; }
+.btn-ghost { background: transparent; color: #555; border: 1px solid var(--gray3); font-size: 0.8rem; letter-spacing: 2px; margin-top: 4px; }
+.btn-ghost:hover { color: var(--orange); border-color: var(--orange); }
+.btn-orange { background: var(--orange); color: var(--white); box-shadow: 4px 4px 0 #8B2200; }
+.btn-orange:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 #8B2200; }
+.btn-orange:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 #8B2200; }
+
+/* AVATAR GRID */
+.avatar-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin-bottom: 14px;
+}
+.avatar-btn {
+  aspect-ratio: 1;
+  background: var(--black);
+  border: 1px solid var(--gray3);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.avatar-btn:hover { border-color: var(--yellow); background: var(--gray2); }
+.avatar-btn.selected {
+  border: 2px solid var(--yellow);
+  background: var(--gray2);
+  box-shadow: 0 0 0 2px var(--orange);
+  transform: scale(1.06);
+}
+
+/* ROOMS LIST */
+.rooms-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
+.room-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: var(--black);
+  border: 1px solid var(--gray3);
+  gap: 10px;
+}
+.room-code-text { font-family: 'Bebas Neue'; font-size: 1.1rem; letter-spacing: 3px; color: var(--yellow); }
+.room-info { font-size: 0.65rem; color: #555; letter-spacing: 1px; margin-top: 1px; }
+.room-empty { color: #444; font-size: 0.75rem; letter-spacing: 1px; text-align: center; padding: 16px 0; }
+.btn-join-sm {
+  padding: 6px 14px;
+  background: var(--yellow);
+  color: var(--black);
+  border: none;
+  font-family: 'Bebas Neue';
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.1s;
+}
+.btn-join-sm:hover { opacity: 0.85; }
+
+/* LOBBY CODE */
+.lobby-code-big {
+  font-family: 'Bebas Neue';
+  font-size: 3rem;
+  letter-spacing: 12px;
+  color: var(--yellow);
+  text-align: center;
+  margin: 8px 0;
+  text-shadow: 3px 3px 0 var(--orange);
+}
+.lobby-hint { font-size: 0.65rem; color: #555; text-align: center; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; }
+
+/* PLAYERS LIST */
+.players-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+.player-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: var(--black);
+  border-left: 3px solid var(--green);
+  font-size: 0.85rem;
+}
+.player-item.waiting-slot { border-left-color: var(--gray3); }
+.player-item.waiting-slot span { color: #444; }
+
+/* TARGET SCORE */
+.score-opts { display: flex; gap: 5px; margin-bottom: 14px; }
+.score-opt {
+  flex: 1;
+  padding: 10px 4px;
+  background: var(--black);
+  border: 1px solid var(--gray3);
+  color: #555;
+  font-family: 'Bebas Neue';
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.1s;
+}
+.score-opt:hover { border-color: var(--yellow); color: var(--yellow); }
+.score-opt.selected { background: var(--yellow); color: var(--black); border-color: var(--yellow); }
+
+/* PICK SCREEN */
+.pick-header {
+  text-align: center;
+  margin-bottom: 16px;
+}
+.pick-who {
+  font-family: 'Bebas Neue';
+  font-size: 2.2rem;
+  letter-spacing: 3px;
+  color: var(--yellow);
+  line-height: 1;
+}
+.pick-sub { font-size: 0.65rem; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+
+.game-choices {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin: 8px 0 16px;
+}
+.game-btn {
+  flex: 1;
+  aspect-ratio: 1;
+  max-width: 110px;
+  background: var(--black);
+  border: 2px solid var(--gray3);
+  font-size: 3rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s;
+  position: relative;
+}
+.game-btn::after {
+  content: attr(data-label);
+  position: absolute;
+  bottom: 6px;
+  left: 0; right: 0;
+  font-family: 'Bebas Neue';
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  color: #444;
+  text-align: center;
+}
+.game-btn:hover {
+  border-color: var(--yellow);
+  background: var(--gray2);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 0 var(--orange);
+}
+.game-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--orange); }
+.game-btn.selected {
+  border-color: var(--yellow);
+  background: var(--gray2);
+  box-shadow: 0 0 0 2px var(--yellow), 4px 4px 0 var(--orange);
+}
+
+/* WAITING */
+.waiting-center { text-align: center; padding: 8px 0 16px; }
+.waiting-title { font-family: 'Bebas Neue'; font-size: 2rem; letter-spacing: 4px; color: var(--white); }
+.waiting-bar {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin: 10px 0 4px;
+}
+.w-dot {
+  width: 6px; height: 6px;
+  background: var(--yellow);
+  animation: wdot 1.2s ease-in-out infinite;
+}
+.w-dot:nth-child(2) { animation-delay: 0.2s; background: var(--orange); }
+.w-dot:nth-child(3) { animation-delay: 0.4s; background: var(--green); }
+@keyframes wdot { 0%,80%,100%{ transform: scaleY(0.4); opacity: 0.4; } 40%{ transform: scaleY(1); opacity: 1; } }
+.waiting-count { font-size: 0.65rem; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; }
+
+.wait-player {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  background: var(--black);
+  border-left: 3px solid var(--gray3);
+  font-size: 0.85rem;
+  margin-bottom: 5px;
+}
+.wait-player.done { border-left-color: var(--green); }
+
+/* RESULT */
+.result-header { text-align: center; margin-bottom: 12px; }
+.result-headline {
+  font-family: 'Bebas Neue';
+  font-size: 2.8rem;
+  letter-spacing: 3px;
+  line-height: 1;
+}
+.result-headline.win { color: var(--yellow); text-shadow: 3px 3px 0 var(--orange); }
+.result-headline.draw { color: var(--white); }
+.result-headline.lose { color: var(--orange); }
+.result-sub-text { font-size: 0.65rem; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+
+.result-players {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin: 12px 0;
+}
+.result-card-player {
+  background: var(--black);
+  border: 1px solid var(--gray3);
+  padding: 10px 8px;
+  text-align: center;
+  min-width: 60px;
+  flex: 1;
+  max-width: 80px;
+  position: relative;
+}
+.result-card-player.winner {
+  border-color: var(--yellow);
+  box-shadow: 3px 3px 0 var(--orange);
+}
+.result-card-player.winner::before {
+  content: '★';
+  position: absolute;
+  top: -10px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 14px;
+  color: var(--yellow);
+}
+.rcp-avatar { font-size: 1.5rem; line-height: 1; }
+.rcp-name { font-size: 0.45rem; color: #555; letter-spacing: 1px; text-transform: uppercase; margin: 3px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 70px; }
+.rcp-choice { font-size: 1.4rem; line-height: 1; }
+
+.summary-strip {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 12px;
+}
+.sum-item {
+  flex: 1;
+  padding: 8px 4px;
+  background: var(--black);
+  border: 1px solid var(--gray3);
+  text-align: center;
+}
+.sum-item.win-item { border-color: var(--yellow); }
+.sum-emoji { font-size: 1.2rem; }
+.sum-count { font-family: 'Bebas Neue'; font-size: 1rem; color: var(--yellow); }
+.sum-label { font-size: 0.5rem; color: #555; letter-spacing: 1px; text-transform: uppercase; }
+
+/* GAME OVER */
+.gameover-title {
+  font-family: 'Bebas Neue';
+  font-size: 3rem;
+  letter-spacing: 4px;
+  color: var(--yellow);
+  text-shadow: 4px 4px 0 var(--orange);
+  text-align: center;
+  animation: shake 0.5s ease-in-out;
+}
+@keyframes shake {
+  0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)}
+}
+.podium { display: flex; flex-direction: column; gap: 5px; margin: 14px 0; }
+.podium-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--black);
+  border-left: 4px solid var(--gray3);
+}
+.podium-row:nth-child(1) { border-left-color: var(--yellow); }
+.podium-row:nth-child(2) { border-left-color: #aaa; }
+.podium-row:nth-child(3) { border-left-color: #c67; }
+.podium-rank { font-family: 'Bebas Neue'; font-size: 1.4rem; min-width: 28px; color: var(--yellow); }
+.podium-score { margin-left: auto; font-family: 'Bebas Neue'; font-size: 1.2rem; color: var(--yellow); }
+
+/* ERROR */
+.err { color: var(--orange); font-size: 0.7rem; letter-spacing: 1px; min-height: 16px; margin-bottom: 8px; }
+
+/* SECTION LABEL */
+.sec-label { font-size: 0.6rem; color: #555; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
+.divider-line { width: 100%; height: 1px; background: var(--gray2); margin: 10px 0; }
+
+/* ENTER ANIMATION */
+.screen.active { animation: screen-in 0.25s ease-out; }
+@keyframes screen-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+/* GLITCH on logo hover */
+.logo:hover { animation: glitch 0.3s steps(2) infinite; }
+@keyframes glitch {
+  0%   { text-shadow: 4px 4px 0 var(--orange); clip-path: inset(0 0 60% 0); }
+  25%  { text-shadow: -4px -4px 0 var(--green); clip-path: inset(40% 0 0 0); }
+  50%  { text-shadow: 4px 4px 0 var(--orange); clip-path: inset(0); }
+  75%  { text-shadow: -2px 2px 0 var(--yellow); clip-path: inset(20% 0 30% 0); }
+  100% { text-shadow: 4px 4px 0 var(--orange); clip-path: inset(0); }
+}
+
+/* ===== AVATAR WIN ANIMATIONS ===== */
+.avatar-win-wrap {
+  position: relative;
+  display: inline-block;
+  font-size: 3.5rem;
+  line-height: 1;
+}
+
+/* PANDA - sağa sola dans */
+.win-panda { animation: panda-dance 0.5s ease-in-out infinite alternate; }
+@keyframes panda-dance {
+  from { transform: rotate(-15deg) scale(1.1); }
+  to   { transform: rotate(15deg) scale(1.2); }
+}
+
+/* UNICORN - uçuş + gökkuşağı iz */
+.win-unicorn { animation: unicorn-fly 1.2s ease-in-out infinite; }
+@keyframes unicorn-fly {
+  0%   { transform: translateY(0) rotate(-5deg); }
+  30%  { transform: translateY(-18px) rotate(5deg); }
+  60%  { transform: translateY(-8px) rotate(-3deg); }
+  100% { transform: translateY(0) rotate(-5deg); }
+}
+.win-unicorn::after {
+  content: '🌈✨🌟';
+  position: absolute;
+  right: -60px; top: 50%;
+  font-size: 0.9rem;
+  animation: rainbow-trail 1.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes rainbow-trail {
+  0%   { opacity: 0; transform: translateX(0) translateY(-50%); }
+  50%  { opacity: 1; transform: translateX(10px) translateY(-50%); }
+  100% { opacity: 0; transform: translateX(20px) translateY(-50%); }
+}
+
+/* KOALA - sarsilma + zzz */
+.win-koala { animation: koala-shake 0.4s ease-in-out infinite; }
+@keyframes koala-shake {
+  0%,100% { transform: rotate(-8deg) scale(1.05); }
+  50%      { transform: rotate(8deg) scale(1.15); }
+}
+.win-koala::after {
+  content: '💤💤';
+  position: absolute;
+  top: -20px; right: -24px;
+  font-size: 0.8rem;
+  animation: zzz-float 1.5s ease-in-out infinite;
+}
+@keyframes zzz-float {
+  0%   { opacity: 0; transform: translateY(0) scale(0.5); }
+  50%  { opacity: 1; transform: translateY(-12px) scale(1); }
+  100% { opacity: 0; transform: translateY(-24px) scale(0.7); }
+}
+
+/* SINCAP - yukarı zıplama */
+.win-sincap { animation: sincap-jump 0.6s cubic-bezier(0.36,0.07,0.19,0.97) infinite; }
+@keyframes sincap-jump {
+  0%,100% { transform: translateY(0) scaleY(1); }
+  40%      { transform: translateY(-20px) scaleY(1.1); }
+  60%      { transform: translateY(-16px) scaleY(1.05); }
+  80%      { transform: translateY(0) scaleX(1.15) scaleY(0.85); }
+}
+.win-sincap::after {
+  content: '🌰🌰';
+  position: absolute;
+  bottom: -18px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  animation: nuts-bounce 0.6s ease-in-out infinite;
+}
+@keyframes nuts-bounce {
+  0%,100% { opacity: 1; transform: translateX(-50%) scale(1); }
+  40%      { opacity: 0.3; transform: translateX(-50%) scale(0.7); }
+}
+
+/* GÖKKUŞAĞI - parlama + yağmur */
+.win-gokkusagi { animation: rainbow-glow 0.8s ease-in-out infinite alternate; }
+@keyframes rainbow-glow {
+  from { filter: drop-shadow(0 0 6px #ff0080) brightness(1.1); transform: scale(1.05); }
+  to   { filter: drop-shadow(0 0 20px #00ffff) brightness(1.4); transform: scale(1.2); }
+}
+.win-gokkusagi::before {
+  content: '💧💧💧💧💧';
+  position: absolute;
+  bottom: -22px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  animation: rain-fall 0.8s linear infinite;
+  white-space: nowrap;
+}
+@keyframes rain-fall {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+  50%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) translateY(8px); }
+}
+
+/* EJDERHA - ateş püskürtme */
+.win-ejder { animation: dragon-roar 0.7s ease-in-out infinite; }
+@keyframes dragon-roar {
+  0%,100% { transform: scale(1) rotate(-5deg); }
+  30%      { transform: scale(1.25) rotate(5deg); }
+  60%      { transform: scale(1.1) rotate(-3deg); }
+}
+.win-ejder::after {
+  content: '🔥💥🔥';
+  position: absolute;
+  right: -56px; top: 10%;
+  font-size: 1.1rem;
+  animation: fire-burst 0.7s ease-out infinite;
+  transform-origin: left center;
+  pointer-events: none;
+}
+@keyframes fire-burst {
+  0%   { opacity: 0; transform: scaleX(0.2) translateX(-10px); }
+  40%  { opacity: 1; transform: scaleX(1.2) translateX(4px); }
+  70%  { opacity: 0.8; transform: scaleX(1) translateX(6px); }
+  100% { opacity: 0; transform: scaleX(0.5) translateX(12px); }
+}
+
+/* RENKLI KALP - kalp patlaması */
+.win-kalp { animation: heart-beat 0.5s ease-in-out infinite; }
+@keyframes heart-beat {
+  0%,100% { transform: scale(1); filter: drop-shadow(0 0 4px #ff69b4); }
+  25%      { transform: scale(1.3); filter: drop-shadow(0 0 16px #ff1493); }
+  50%      { transform: scale(1.1); filter: drop-shadow(0 0 8px #ff69b4); }
+}
+.win-kalp::after {
+  content: '💕💖💗';
+  position: absolute;
+  top: -24px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  animation: hearts-float 1s ease-out infinite;
+  white-space: nowrap;
+}
+@keyframes hearts-float {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(0) scale(0.5); }
+  50%  { opacity: 1; transform: translateX(-50%) translateY(-14px) scale(1); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-28px) scale(0.8); }
+}
+
+/* HARRY POTTER - büyü efekti */
+.win-harry { animation: magic-spin 1s ease-in-out infinite; }
+@keyframes magic-spin {
+  0%,100% { transform: rotate(-10deg) scale(1); }
+  25%      { transform: rotate(10deg) scale(1.2); filter: drop-shadow(0 0 12px #9f7aea); }
+  50%      { transform: rotate(-8deg) scale(1.15); filter: drop-shadow(0 0 20px #805ad5); }
+  75%      { transform: rotate(8deg) scale(1.1); filter: drop-shadow(0 0 8px #9f7aea); }
+}
+.win-harry::after {
+  content: '⚡✨⭐';
+  position: absolute;
+  top: -20px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.85rem;
+  animation: magic-sparks 0.8s ease-in-out infinite;
+  white-space: nowrap;
+}
+@keyframes magic-sparks {
+  0%,100% { opacity: 0; transform: translateX(-50%) rotate(0deg) scale(0.5); }
+  50%      { opacity: 1; transform: translateX(-50%) rotate(180deg) scale(1.2); }
+}
+
+/* PERİ - kanat çırpma + peri tozu */
+.win-peri { animation: fairy-flutter 0.4s ease-in-out infinite alternate; }
+@keyframes fairy-flutter {
+  from { transform: translateY(-6px) rotate(-8deg) scale(1.05); }
+  to   { transform: translateY(6px) rotate(8deg) scale(1.15); }
+}
+.win-peri::after {
+  content: '✨🌟💫✨';
+  position: absolute;
+  bottom: -18px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  animation: fairy-dust 0.8s ease-out infinite;
+  white-space: nowrap;
+}
+@keyframes fairy-dust {
+  0%   { opacity: 0; transform: translateX(-50%) scale(0.5); }
+  60%  { opacity: 1; transform: translateX(-50%) scale(1) translateY(-4px); }
+  100% { opacity: 0; transform: translateX(-50%) scale(0.8) translateY(-10px); }
+}
+
+/* TAVŞAN - süper zıplama */
+.win-tavsan { animation: bunny-hop 0.5s cubic-bezier(0.36,0.07,0.19,0.97) infinite; }
+@keyframes bunny-hop {
+  0%,100% { transform: translateY(0) scaleX(1) scaleY(1); }
+  20%      { transform: translateY(-24px) scaleX(0.9) scaleY(1.15); }
+  40%      { transform: translateY(-20px) scaleX(0.95) scaleY(1.1); }
+  70%      { transform: translateY(0) scaleX(1.2) scaleY(0.8); }
+  85%      { transform: translateY(-5px) scaleX(1) scaleY(1.05); }
+}
+.win-tavsan::after {
+  content: '🥕🥕';
+  position: absolute;
+  bottom: -20px; right: -20px;
+  font-size: 0.8rem;
+  animation: carrot-spin 0.5s linear infinite;
+}
+@keyframes carrot-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ORTAK WIN WRAPPER */
+.avatar-win-wrap .confetti {
+  position: absolute;
+  top: -30px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.7rem;
+  pointer-events: none;
+  animation: confetti-pop 0.8s ease-out infinite;
+  white-space: nowrap;
+}
+@keyframes confetti-pop {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(0); }
+  30%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-30px); }
+}
 </style>
 </head>
 <body>
 
-<h1>🪨 RockIt!</h1>
-<p class="subtitle">Çok Oyunculu — Gerçek Zamanlı</p>
-<div class="scoreboard" id="scoreboard" style="display:none"></div>
-
-<!-- GİRİŞ -->
-<div class="screen active" id="screen-join">
-  <div class="card">
-    <h2>👋 Hoş Geldin!</h2>
-    <p>İsmini ve avatarını seç!</p>
-    <input type="text" id="input-name" placeholder="İsmin" maxlength="16" />
-    <div class="section-label">Avatarını Seç</div>
-    <div class="avatar-grid" id="avatar-grid"></div>
-    <div class="divider"></div>
-    <p style="margin-bottom:6px">Mevcut bir odaya katıl ya da yeni oda aç:</p>
-    <input type="text" id="input-room" placeholder="Oda Kodu (boş = yeni oda)" maxlength="15" style="text-transform:uppercase" />
-    <div class="error-msg" id="join-error"></div>
-    <button class="btn btn-primary" onclick="joinGame()">Oyuna Gir →</button>
-  </div>
-  <div class="card" id="rooms-card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <span style="font-weight:900;font-size:0.95rem">🚪 Açık Odalar</span>
-      <button class="btn-join" onclick="refreshRooms()" style="background:#0f3460;color:#a0aec0">↻ Yenile</button>
-    </div>
-    <div class="rooms-list" id="rooms-list"><div class="room-empty">Yükleniyor...</div></div>
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker">
+    <span>ROCKIT!</span><span>✊ TAŞ</span><span>🖐️ KAĞIT</span><span>✌️ MAKAS</span>
+    <span>ROCKIT!</span><span>EN İYİ KAZANIR</span><span>HAZIR MISIN?</span><span>OYNA ŞİMDİ</span>
+    <span>ROCKIT!</span><span>✊ TAŞ</span><span>🖐️ KAĞIT</span><span>✌️ MAKAS</span>
+    <span>ROCKIT!</span><span>EN İYİ KAZANIR</span><span>HAZIR MISIN?</span><span>OYNA ŞİMDİ</span>
   </div>
 </div>
 
-<!-- LOBİ -->
-<div class="screen" id="screen-lobby">
-  <div class="card">
-    <p style="font-size:0.72rem;color:#a0aec0;margin-bottom:2px;">ODA KODU</p>
-    <div class="lobby-code" id="lobby-code">----</div>
-    <p>Bu kodu arkadaşlarına gönder!<br>Maksimum 7 oyuncu.</p>
-    <div id="target-select-section">
-      <div class="section-label" style="text-align:center;margin-bottom:6px">🏆 Kaç puana ulaşan kazanır?</div>
-      <div class="score-select-row" id="score-select-row">
-        <button class="score-opt" onclick="selectTarget(3,this)">3</button>
-        <button class="score-opt" onclick="selectTarget(5,this)">5</button>
-        <button class="score-opt selected" onclick="selectTarget(7,this)">7</button>
-        <button class="score-opt" onclick="selectTarget(10,this)">10</button>
-        <button class="score-opt" onclick="selectTarget(15,this)">15</button>
+<!-- SCORE BAR -->
+<div class="score-bar" id="score-bar"></div>
+
+<div class="app">
+  <div class="header">
+    <div class="logo">RockIt!</div>
+    <div class="logo-sub">Çok Oyunculu — Gerçek Zamanlı</div>
+  </div>
+
+  <!-- GİRİŞ -->
+  <div class="screen active" id="screen-join">
+    <div class="panel">
+      <div class="panel-title">Oyuncu Bilgileri</div>
+      <div class="sec-label">İsmin</div>
+      <input type="text" id="input-name" placeholder="ADI GİR..." maxlength="16" />
+      <div class="sec-label">Avatarını Seç</div>
+      <div class="avatar-grid" id="avatar-grid"></div>
+      <div class="divider-line"></div>
+      <div class="sec-label">Oda Kodu (boş = yeni oda aç)</div>
+      <input type="text" id="input-room" placeholder="KOD GİR..." maxlength="15" style="text-transform:uppercase;margin-bottom:6px" />
+      <div class="err" id="join-error"></div>
+      <button class="btn btn-yellow" onclick="joinGame()">OYUNA GİR →</button>
+    </div>
+
+    <div class="panel">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="panel-title" style="margin:0">Açık Odalar</div>
+        <button onclick="refreshRooms()" style="background:none;border:1px solid #333;color:#555;font-family:'DM Mono';font-size:0.7rem;padding:4px 10px;cursor:pointer;letter-spacing:1px">↻ YENİLE</button>
+      </div>
+      <div class="rooms-list" id="rooms-list"><div class="room-empty">YÜKLENİYOR...</div></div>
+    </div>
+  </div>
+
+  <!-- LOBİ -->
+  <div class="screen" id="screen-lobby">
+    <div class="panel">
+      <div class="sec-label" style="text-align:center">Oda Kodu</div>
+      <div class="lobby-code-big" id="lobby-code">-----</div>
+      <div class="lobby-hint">Bu kodu arkadaşlarına gönder</div>
+
+      <div id="target-select-section">
+        <div class="sec-label">🏆 Kaç puana kazanılır?</div>
+        <div class="score-opts" id="score-opts">
+          <button class="score-opt" onclick="selectTarget(3,this)">3</button>
+          <button class="score-opt" onclick="selectTarget(5,this)">5</button>
+          <button class="score-opt selected" onclick="selectTarget(7,this)">7</button>
+          <button class="score-opt" onclick="selectTarget(10,this)">10</button>
+          <button class="score-opt" onclick="selectTarget(15,this)">15</button>
+        </div>
+      </div>
+
+      <div class="sec-label">Oyuncular</div>
+      <div class="players-list" id="lobby-players"></div>
+      <button class="btn btn-yellow" id="btn-start" onclick="startGame()" disabled>OYUNU BAŞLAT</button>
+      <button class="btn btn-ghost" onclick="leaveGame()">ODADAN AYRIL</button>
+    </div>
+  </div>
+
+  <!-- OYUN BİTİŞ -->
+  <div class="screen" id="screen-gameover">
+    <div class="panel">
+      <div class="gameover-title">OYUN BİTTİ!</div>
+      <p id="gameover-winner" style="font-family:'Bebas Neue';font-size:1.4rem;letter-spacing:2px;text-align:center;color:var(--white);margin-top:6px;"></p>
+      <div class="podium" id="gameover-podium"></div>
+      <button class="btn btn-yellow" onclick="restartLobby()">YENİ OYUN →</button>
+      <button class="btn btn-ghost" onclick="leaveGame()">ODADAN ÇIK</button>
+    </div>
+  </div>
+
+  <!-- SEÇİM -->
+  <div class="screen" id="screen-pick">
+    <div class="panel">
+      <div class="pick-header">
+        <div class="pick-who" id="pick-who">SENİN SIRAN</div>
+        <div class="pick-sub">Kimse görmeden seç — gizli tut!</div>
+      </div>
+      <div class="game-choices">
+        <button class="game-btn" id="gbtn-tas" onclick="submitChoice('tas')" data-label="TAŞ">✊</button>
+        <button class="game-btn" id="gbtn-kagit" onclick="submitChoice('kagit')" data-label="KAĞIT">🖐️</button>
+        <button class="game-btn" id="gbtn-makas" onclick="submitChoice('makas')" data-label="MAKAS">✌️</button>
       </div>
     </div>
-    <div class="players-list" id="lobby-players"></div>
-    <button class="btn btn-primary" id="btn-start" onclick="startGame()" disabled>Oyunu Başlat</button>
-    <button class="btn btn-ghost" onclick="leaveGame()">Ayrıl</button>
   </div>
-</div>
 
-<!-- OYUN BİTİŞ -->
-<div class="screen" id="screen-gameover">
-  <div class="card" style="border: 2px solid #ffd700;">
-    <h2 style="color:#ffd700;font-size:1.5rem">🏆 Oyun Bitti!</h2>
-    <p id="gameover-winner" style="font-size:1rem;font-weight:900;color:white;margin-bottom:4px;"></p>
-    <p id="gameover-sub" style="margin-bottom:10px"></p>
-    <div class="gameover-podium" id="gameover-podium"></div>
-    <button class="btn btn-primary" onclick="restartLobby()">Yeni Oyun 🔄</button>
-    <button class="btn btn-ghost" onclick="leaveGame()">Odadan Çık</button>
-  </div>
-</div>
-
-<!-- SEÇİM -->
-<div class="screen" id="screen-pick">
-  <div class="card">
-    <div class="badge" id="pick-badge">🎮 Senin Sıran!</div>
-    <h2 style="margin-top:8px">Seçimini Yap!</h2>
-    <p>Kimse görmeden seç 🙈</p>
-    <div class="game-choices">
-      <button class="game-btn" id="gbtn-tas" onclick="submitChoice('tas')" title="Taş">✊</button>
-      <button class="game-btn" id="gbtn-kagit" onclick="submitChoice('kagit')" title="Kağıt">🖐️</button>
-      <button class="game-btn" id="gbtn-makas" onclick="submitChoice('makas')" title="Makas">✌️</button>
+  <!-- BEKLEME -->
+  <div class="screen" id="screen-waiting">
+    <div class="panel">
+      <div class="waiting-center">
+        <div class="waiting-title">BEKLENİYOR</div>
+        <div class="waiting-bar">
+          <div class="w-dot"></div><div class="w-dot"></div><div class="w-dot"></div>
+        </div>
+        <div class="waiting-count" id="waiting-count">— / — oyuncu seçti</div>
+      </div>
+      <div id="waiting-players"></div>
     </div>
-    <p id="pick-status" style="margin-top:4px;font-size:0.82rem;color:#a0aec0;min-height:20px;"></p>
   </div>
-</div>
 
-<!-- BEKLEME -->
-<div class="screen" id="screen-waiting">
-  <div class="card">
-    <h2>Bekleniyor...</h2>
-    <div class="waiting-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-    <p id="waiting-status"></p>
-    <div class="players-list" id="waiting-players"></div>
-  </div>
-</div>
-
-<!-- SONUÇ -->
-<div class="screen" id="screen-result">
-  <div class="card">
-    <div class="result-row" id="result-row"></div>
-    <div class="summary-box" id="summary-box"></div>
-    <div class="result-title" id="result-title"></div>
-    <p id="result-sub" style="font-size:0.82rem;color:#a0aec0;margin-bottom:14px;"></p>
-    <button class="btn btn-primary" onclick="playAgain()">Tekrar Oyna 🔄</button>
-    <button class="btn btn-ghost" onclick="leaveGame()">Odadan Çık</button>
+  <!-- SONUÇ -->
+  <div class="screen" id="screen-result">
+    <div class="panel">
+      <div class="result-header">
+        <div class="result-headline" id="result-headline">—</div>
+        <div class="result-sub-text" id="result-sub-text"></div>
+      </div>
+      <div class="result-players" id="result-players"></div>
+      <div class="summary-strip" id="summary-strip"></div>
+      <button class="btn btn-yellow" onclick="playAgain()">TEKRAR OYNA →</button>
+      <button class="btn btn-ghost" onclick="leaveGame()">ODADAN ÇIK</button>
+    </div>
   </div>
 </div>
 
@@ -259,13 +892,13 @@ const GAME_CHOICES = {
   makas: { emoji: '✌️', label: 'Makas' },
 };
 
-// Klasik kural: key, value'yu yener
 const BEATS = { tas: 'makas', makas: 'kagit', kagit: 'tas' };
 
 let myId = null, myName = '', myAvatar = null;
 let roomCode = '', roomRef = null, roomListener = null;
 let myChosenId = null;
 let targetScore = 7;
+let isResolvingRound = false;
 
 // Avatar grid
 const avatarGrid = document.getElementById('avatar-grid');
@@ -301,10 +934,9 @@ function selectTarget(val, btn) {
   btn.classList.add('selected');
 }
 
-// ---- ODA LİSTESİ ----
 async function refreshRooms() {
   const list = document.getElementById('rooms-list');
-  list.innerHTML = '<div class="room-empty">Yükleniyor...</div>';
+  list.innerHTML = '<div class="room-empty">YÜKLENİYOR...</div>';
   const snap = await db.ref('rooms').once('value');
   const all = snap.val() || {};
   const open = [];
@@ -312,27 +944,15 @@ async function refreshRooms() {
     if (data.status === 'lobby') {
       const players = data.players || {};
       const onlineCount = Object.values(players).filter(p => p.online !== false).length;
-      if (onlineCount > 0 && onlineCount < MAX_PLAYERS) {
-        open.push({ code, count: onlineCount });
-      }
+      if (onlineCount > 0 && onlineCount < MAX_PLAYERS) open.push({ code, count: onlineCount });
     }
   });
-
   list.innerHTML = '';
-  if (open.length === 0) {
-    list.innerHTML = '<div class="room-empty">Şu an açık oda yok</div>';
-    return;
-  }
+  if (open.length === 0) { list.innerHTML = '<div class="room-empty">ŞU AN AÇIK ODA YOK</div>'; return; }
   open.forEach(r => {
     const div = document.createElement('div');
     div.className = 'room-item';
-    div.innerHTML = `
-      <div class="room-left">
-        <div class="room-code-text">${r.code}</div>
-        <div class="room-info">${r.count}/${MAX_PLAYERS} oyuncu</div>
-      </div>
-      <button class="btn-join" onclick="quickJoin('${r.code}')">Katıl →</button>
-    `;
+    div.innerHTML = `<div><div class="room-code-text">${r.code}</div><div class="room-info">${r.count}/${MAX_PLAYERS} OYUNCU</div></div><button class="btn-join-sm" onclick="quickJoin('${r.code}')">KATIL →</button>`;
     list.appendChild(div);
   });
 }
@@ -342,17 +962,15 @@ function quickJoin(code) {
   joinGame();
 }
 
-// Sayfa açılınca odaları yükle
 refreshRooms();
 
-// ---- OYUNA GİR ----
 async function joinGame() {
   const name = document.getElementById('input-name').value.trim();
   const room = document.getElementById('input-room').value.trim().toUpperCase();
   const err = document.getElementById('join-error');
   err.textContent = '';
-  if (!name) { err.textContent = 'İsim girmeden devam edemezsin!'; return; }
-  if (!myAvatar) { err.textContent = 'Bir avatar seçmelisin!'; return; }
+  if (!name) { err.textContent = '✕ İSİM GİRMEDEN DEVAM EDEMEZSİN'; return; }
+  if (!myAvatar) { err.textContent = '✕ BİR AVATAR SEÇMELİSİN'; return; }
 
   myId = 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
   myName = name;
@@ -362,33 +980,25 @@ async function joinGame() {
   const snap = await roomRef.once('value');
   const data = snap.val();
 
-  if (data && data.status === 'playing') {
-    err.textContent = 'Bu oda şu an oyun oynuyor, başka oda dene.'; return;
-  }
-  // Sadece online oyuncuları al, offline olanları temizle
+  if (data && data.status === 'playing') { err.textContent = '✕ ODA OYUN OYNUYOR'; return; }
+
   const rawPlayers = data ? (data.players || {}) : {};
   const players = {};
-  Object.keys(rawPlayers).forEach(k => {
-    if (rawPlayers[k].online !== false) players[k] = rawPlayers[k];
-  });
+  Object.keys(rawPlayers).forEach(k => { if (rawPlayers[k].online !== false) players[k] = rawPlayers[k]; });
   const onlineCount = Object.keys(players).length;
-  if (data && onlineCount >= MAX_PLAYERS) {
-    err.textContent = `Oda dolu! (Maks ${MAX_PLAYERS} oyuncu)`; return;
-  }
+  if (data && onlineCount >= MAX_PLAYERS) { err.textContent = `✕ ODA DOLU (MAKS ${MAX_PLAYERS})`; return; }
 
   const isNewRoom = !data || onlineCount === 0;
-  players[myId] = { name: myName, avatar: myAvatar, score: isNewRoom ? 0 : 0, online: true };
+  players[myId] = { name: myName, avatar: myAvatar, score: 0, online: true };
 
-  await roomRef.set({
-    players,
-    status: isNewRoom ? 'lobby' : (data.status || 'lobby'),
-    round: isNewRoom ? 0 : (data.round || 0),
-    hostId: isNewRoom ? myId : (data.hostId || myId),
-    targetScore: isNewRoom ? null : (data.targetScore || null)
-  });
+  if (isNewRoom) {
+    await roomRef.set({ players, status: 'lobby', round: 0, hostId: myId, targetScore: null });
+  } else {
+    await roomRef.child('players').update(players);
+  }
   roomRef.child('players/' + myId + '/online').onDisconnect().set(false);
 
-  document.getElementById('scoreboard').style.display = 'flex';
+  document.getElementById('score-bar').classList.add('visible');
   document.getElementById('lobby-code').textContent = roomCode;
   showScreen('screen-lobby');
   listenRoom();
@@ -398,80 +1008,87 @@ function listenRoom() {
   if (roomListener) roomRef.off('value', roomListener);
   roomListener = roomRef.on('value', snap => {
     const data = snap.val();
-    // Oda silindiyse ana ekrana dön
-    if (!data) {
-      leaveGame();
-      return;
-    }
+    if (!data) { resetLocalState(); showScreen('screen-join'); refreshRooms(); return; }
+
     const players = data.players || {};
     const onlineKeys = Object.keys(players).filter(k => players[k].online !== false);
 
-    // Odada hiç online oyuncu kalmadıysa odayı sil
-    if (onlineKeys.length === 0) {
-      roomRef.remove();
-      return;
-    }
+    if (onlineKeys.length === 0) { roomRef.remove(); return; }
 
-    // Host çıktıysa yeni host ata (online olan ilk kişi)
     if (data.hostId && players[data.hostId] && players[data.hostId].online === false) {
-      if (onlineKeys[0] === myId) {
-        roomRef.update({ hostId: myId });
-      }
+      if (onlineKeys[0] === myId) roomRef.update({ hostId: myId });
     }
 
-    updateScoreboard(players);
-    if (data.status === 'lobby') renderLobby(data);
-    else if (data.status === 'playing') renderPick(data);
-    else if (data.status === 'result') renderResult(data);
+    updateScoreBar(players, data.targetScore);
+
+    if (data.status === 'lobby') {
+      renderLobby(data);
+    } else if (data.status === 'playing') {
+      const choices = data.choices || {};
+      const playerKeys = Object.keys(players);
+      const allChose = playerKeys.every(k => choices[k] !== null && choices[k] !== undefined);
+      if (allChose && !isResolvingRound) {
+        const sortedKeys = onlineKeys.slice().sort();
+        if (sortedKeys[0] === myId) {
+          isResolvingRound = true;
+          resolveRound(data).finally(() => { isResolvingRound = false; });
+        }
+      } else if (!allChose) {
+        renderPick(data);
+      }
+    } else if (data.status === 'result') {
+      renderResult(data);
+    }
   });
 }
 
 function renderLobby(data) {
   const players = data.players || {};
   const keys = Object.keys(players);
+  const onlinePlayerKeys = keys.filter(k => players[k].online !== false);
   const list = document.getElementById('lobby-players');
   list.innerHTML = '';
-  keys.forEach(k => {
+  onlinePlayerKeys.forEach(k => {
     const p = players[k];
-    const online = p.online !== false;
     const div = document.createElement('div');
     div.className = 'player-item';
-    div.innerHTML = `<div class="player-dot ${online ? '' : 'off'}"></div><span style="font-size:1.2rem">${getAvatarEmoji(p.avatar)}</span><span>${p.name}</span>${k === myId ? '<span style="font-size:0.7rem;color:#a0aec0;margin-left:auto">(sen)</span>' : ''}`;
+    div.innerHTML = `<span style="font-size:1.1rem">${getAvatarEmoji(p.avatar)}</span><span>${p.name}</span>${k === myId ? '<span style="margin-left:auto;font-size:0.6rem;color:#555;letter-spacing:1px">SEN</span>' : ''}`;
     list.appendChild(div);
   });
-  for (let i = keys.length; i < MAX_PLAYERS; i++) {
+  for (let i = onlinePlayerKeys.length; i < MAX_PLAYERS; i++) {
     const div = document.createElement('div');
-    div.className = 'player-item';
-    div.innerHTML = `<div class="player-dot off"></div><span style="color:#4a5568;font-size:0.85rem">Bekleniyor...</span>`;
+    div.className = 'player-item waiting-slot';
+    div.innerHTML = `<span style="font-size:0.65rem;letter-spacing:2px">— BEKLENİYOR</span>`;
     list.appendChild(div);
   }
   const btn = document.getElementById('btn-start');
-  const isHost = (data.hostId === myId) || (!data.hostId && keys[0] === myId);
-  btn.disabled = !isHost || keys.length < 2;
-  btn.textContent = isHost ? (keys.length < 2 ? 'En az 2 oyuncu gerekli' : `Oyunu Başlat (${keys.length} oyuncu)`) : 'Oda sahibi başlatacak...';
-  // Hedef puan seçimini sadece oda sahibine göster
+  const isHost = (data.hostId === myId) || (!data.hostId && onlinePlayerKeys[0] === myId);
+  btn.disabled = !isHost || onlinePlayerKeys.length < 2;
+  btn.textContent = isHost ? (onlinePlayerKeys.length < 2 ? 'EN AZ 2 OYUNCU GEREKLİ' : `OYUNU BAŞLAT (${onlinePlayerKeys.length} KİŞİ)`) : 'ODA SAHİBİ BAŞLATACAK...';
   const tss = document.getElementById('target-select-section');
   if (tss) tss.style.display = isHost ? 'block' : 'none';
-  // Oda sahibi değilse hedef puanı göster
-  const existingTarget = document.getElementById('target-info-label');
-  if (existingTarget) existingTarget.remove();
+  const existingLbl = document.getElementById('target-info-label');
+  if (existingLbl) existingLbl.remove();
   if (!isHost && data.targetScore) {
-    const lbl = document.createElement('p');
+    const lbl = document.createElement('div');
     lbl.id = 'target-info-label';
-    lbl.style.cssText = 'font-size:0.8rem;color:#a0aec0;margin-bottom:6px;';
-    lbl.textContent = `🏆 Hedef: ${data.targetScore} puan`;
+    lbl.style.cssText = 'font-size:0.65rem;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;';
+    lbl.textContent = `🏆 HEDEF: ${data.targetScore} PUAN`;
     document.getElementById('lobby-players').before(lbl);
   }
   showScreen('screen-lobby');
 }
 
 async function startGame() {
+  if (!roomRef) return;
   const snap = await roomRef.once('value');
   const data = snap.val();
-  const keys = Object.keys(data.players || {});
-  if (keys.length < 2) return;
+  if (!data) return;
+  const players = data.players || {};
+  const onlineKeys = Object.keys(players).filter(k => players[k].online !== false);
+  if (onlineKeys.length < 2) return;
   const choices = {};
-  keys.forEach(k => { choices[k] = null; });
+  onlineKeys.forEach(k => { choices[k] = null; });
   await roomRef.update({ status: 'playing', choices, round: (data.round || 0) + 1, targetScore });
 }
 
@@ -481,8 +1098,6 @@ function renderPick(data) {
   const players = data.players || {};
   const total = Object.keys(players).length;
   const done = Object.values(choices).filter(v => v !== null).length;
-
-  // Firebase'den seçim geldi veya yerel olarak zaten seçtik
   const effectiveChoice = myChoice || myChosenId;
 
   if (effectiveChoice) {
@@ -496,11 +1111,11 @@ function renderPick(data) {
     Object.keys(players).forEach(k => {
       const did = choices[k] !== null && choices[k] !== undefined;
       const div = document.createElement('div');
-      div.className = 'player-item';
-      div.innerHTML = `<div class="player-dot ${did ? '' : 'off'}"></div><span style="font-size:1.1rem">${getAvatarEmoji(players[k].avatar)}</span><span>${players[k].name}</span><span style="margin-left:auto">${did ? '✅' : '⏳'}</span>`;
+      div.className = 'wait-player' + (did ? ' done' : '');
+      div.innerHTML = `<span style="font-size:1rem">${getAvatarEmoji(players[k].avatar)}</span><span>${players[k].name}</span><span style="margin-left:auto;font-size:0.8rem">${did ? '✓' : '…'}</span>`;
       wList.appendChild(div);
     });
-    document.getElementById('waiting-status').textContent = `${done}/${total} oyuncu seçimini yaptı`;
+    document.getElementById('waiting-count').textContent = `${done} / ${total} OYUNCU SEÇTİ`;
     showScreen('screen-waiting');
   } else {
     myChosenId = null;
@@ -509,90 +1124,57 @@ function renderPick(data) {
       if (b) b.className = 'game-btn';
     });
     const me = players[myId];
-    document.getElementById('pick-badge').textContent = me ? getAvatarEmoji(me.avatar) + ' ' + me.name : '🎮 Senin Sıran!';
+    document.getElementById('pick-who').textContent = me ? `${getAvatarEmoji(me.avatar)} ${me.name.toUpperCase()}` : 'SENİN SIRAN';
     showScreen('screen-pick');
   }
 }
 
 async function submitChoice(choiceId) {
-  if (myChosenId) return;
+  if (myChosenId || !roomRef || !myId) return;
   myChosenId = choiceId;
   ['tas', 'kagit', 'makas'].forEach(id => {
     const b = document.getElementById('gbtn-' + id);
     if (b) b.className = 'game-btn' + (id === choiceId ? ' selected' : '');
   });
-
-  // Seçimi kaydet
   await roomRef.child('choices/' + myId).set(choiceId);
 }
 
 async function resolveRound(data) {
+  if (!roomRef) return;
   const choices = data.choices;
   const players = data.players;
   const keys = Object.keys(players);
-
-  // Sayım: kaç kişi hangi sembolü seçti
   const counts = { tas: 0, kagit: 0, makas: 0 };
   keys.forEach(k => { if (choices[k]) counts[choices[k]]++; });
-
-  // Kullanılan semboller
   const used = Object.entries(counts).filter(([, c]) => c > 0);
 
-  let winnerSymbol = null;
-  let isDraw = false;
+  let winnerSymbol = null, isDraw = false;
 
   if (used.length === 1) {
-    // Herkes aynı → berabere
     isDraw = true;
   } else if (used.length === 3) {
-    // 3 farklı sembol → en çok seçilen kazanır, eşitlik varsa berabere
     const maxCount = Math.max(...used.map(([, c]) => c));
     const topSymbols = used.filter(([, c]) => c === maxCount).map(([s]) => s);
-    if (topSymbols.length > 1) {
-      isDraw = true;
-    } else {
-      winnerSymbol = topSymbols[0];
-    }
+    if (topSymbols.length > 1) isDraw = true;
+    else winnerSymbol = topSymbols[0];
   } else {
-    // 2 farklı sembol var
-    const [symA, cntA] = used[0];
-    const [symB, cntB] = used[1];
-
-    // Önce klasik kural: hangisi diğerini yeniyor?
+    const [symA] = used[0];
+    const [symB] = used[1];
     let classicWinner = null;
     if (BEATS[symA] === symB) classicWinner = symA;
     else if (BEATS[symB] === symA) classicWinner = symB;
-
-    if (!classicWinner) {
-      // Klasik kural belirsizse berabere (olmaması lazım ama güvenlik için)
-      isDraw = true;
-    } else {
-      // Klasik kazanan belli, şimdi sayı üstünlüğüne bak
-      const loserSym = classicWinner === symA ? symB : symA;
-      const winnerCount = counts[classicWinner];
-      const loserCount = counts[loserSym];
-
-      // Klasik kural her zaman geçerli, sayı fark etmez
-      winnerSymbol = classicWinner;
-    }
+    if (!classicWinner) isDraw = true;
+    else winnerSymbol = classicWinner;
   }
 
   const winnerKeys = winnerSymbol ? keys.filter(k => choices[k] === winnerSymbol) : [];
-
   const newPlayers = {};
   keys.forEach(k => {
     newPlayers[k] = { ...players[k], score: (players[k].score || 0) + (winnerKeys.includes(k) ? 1 : 0) };
   });
 
-  await roomRef.update({
-    status: 'result',
-    lastChoices: choices,
-    lastCounts: counts,
-    winnerSymbol: winnerSymbol || null,
-    winnerKeys,
-    isDraw,
-    players: newPlayers
-  });
+  if (!roomRef) return;
+  await roomRef.update({ status: 'result', lastChoices: choices, lastCounts: counts, winnerSymbol: winnerSymbol || null, winnerKeys, isDraw, players: newPlayers });
 }
 
 function renderResult(data) {
@@ -605,146 +1187,145 @@ function renderResult(data) {
   const keys = Object.keys(players);
 
   // Oyuncu kartları
-  const row = document.getElementById('result-row');
-  row.innerHTML = '';
+  const rp = document.getElementById('result-players');
+  rp.innerHTML = '';
   keys.forEach(k => {
     const gc = GAME_CHOICES[lastChoices[k]] || { emoji: '?', label: '?' };
     const isWinner = winnerKeys.includes(k);
     const div = document.createElement('div');
-    div.className = 'result-player';
-    div.innerHTML = `
-      <div class="pavatar" style="${isWinner ? 'filter:drop-shadow(0 0 5px gold)' : ''}">${getAvatarEmoji(players[k].avatar)}</div>
-      <div class="pname">${players[k].name}</div>
-      <div class="pchoice">${gc.emoji}</div>
-      ${isWinner ? '<div class="result-crown">👑</div>' : ''}
-    `;
-    row.appendChild(div);
+    div.className = 'result-card-player' + (isWinner ? ' winner' : '');
+    const avatarHtml = isWinner
+      ? `<div class="avatar-win-wrap"><span class="win-${players[k].avatar}">${getAvatarEmoji(players[k].avatar)}</span></div>`
+      : `<div class="rcp-avatar">${getAvatarEmoji(players[k].avatar)}</div>`;
+    div.innerHTML = `${avatarHtml}<div class="rcp-name">${players[k].name}</div><div class="rcp-choice">${gc.emoji}</div>`;
+    rp.appendChild(div);
   });
 
-  // Özet kutu
-  const summary = document.getElementById('summary-box');
-  summary.innerHTML = '';
+  // Özet strip
+  const ss = document.getElementById('summary-strip');
+  ss.innerHTML = '';
   ['tas', 'kagit', 'makas'].forEach(sym => {
     const cnt = lastCounts[sym] || 0;
     if (cnt === 0) return;
     const gc = GAME_CHOICES[sym];
     const isWin = sym === winnerSymbol;
-    const row2 = document.createElement('div');
-    row2.className = 'summary-row' + (isWin ? ' winner-row' : '');
-    row2.innerHTML = `<span class="sym">${gc.emoji}</span><span class="cnt">${cnt}x</span><span>${gc.label}</span>${isWin ? '<span class="win-badge">👑 Kazanan</span>' : ''}`;
-    summary.appendChild(row2);
+    const div = document.createElement('div');
+    div.className = 'sum-item' + (isWin ? ' win-item' : '');
+    div.innerHTML = `<div class="sum-emoji">${gc.emoji}</div><div class="sum-count">${cnt}x</div><div class="sum-label">${gc.label}${isWin ? ' ★' : ''}</div>`;
+    ss.appendChild(div);
   });
 
-  const title = document.getElementById('result-title');
-  const sub = document.getElementById('result-sub');
+  const hl = document.getElementById('result-headline');
+  const sub = document.getElementById('result-sub-text');
 
   if (isDraw) {
-    title.textContent = '🤝 Berabere!';
-    title.className = 'result-title draw';
-    sub.textContent = 'Kimse kazanamadı!';
+    hl.textContent = 'BERABERE!'; hl.className = 'result-headline draw';
+    sub.textContent = 'KİMSE KAZANAMADI';
   } else if (winnerKeys.includes(myId)) {
-    title.textContent = '🎉 Kazandın!';
-    title.className = 'result-title win';
-    sub.textContent = `${GAME_CHOICES[winnerSymbol].label} kazandı! Tebrikler! 🏆`;
+    hl.textContent = 'KAZANDIN!'; hl.className = 'result-headline win';
+    const wLabel = (winnerSymbol && GAME_CHOICES[winnerSymbol]) ? GAME_CHOICES[winnerSymbol].label.toUpperCase() : '';
+    sub.textContent = `${wLabel} KAZANDI — TEBRİKLER!`;
   } else {
-    const gc = GAME_CHOICES[winnerSymbol] || {};
-    title.textContent = `😅 ${gc.label || ''} Kazandı!`;
-    title.className = 'result-title lose';
-    sub.textContent = winnerKeys.map(k => players[k].name).join(', ') + ' puan aldı.';
+    const gc = (winnerSymbol && GAME_CHOICES[winnerSymbol]) ? GAME_CHOICES[winnerSymbol] : { label: '' };
+    hl.textContent = `${gc.label.toUpperCase()} KAZANDI`; hl.className = 'result-headline lose';
+    const winNames = winnerKeys.map(k => players[k] ? players[k].name.toUpperCase() : '').filter(Boolean).join(', ');
+    sub.textContent = `${winNames} PUAN ALDI`;
   }
 
-  // Oyun bitti mi kontrol et
   const target = data.targetScore || 7;
   const champion = Object.values(players).find(p => (p.score || 0) >= target);
-  if (champion) {
-    renderGameOver(players, target);
-    return;
-  }
+  if (champion) { renderGameOver(players, target); return; }
   showScreen('screen-result');
 }
 
 function renderGameOver(players, target) {
   const sorted = Object.values(players).sort((a, b) => (b.score || 0) - (a.score || 0));
   const winner = sorted[0];
-  document.getElementById('gameover-winner').textContent = `${getAvatarEmoji(winner.avatar)} ${winner.name} kazandı!`;
-  document.getElementById('gameover-sub').textContent = `${target} puana ilk ulaşan: ${winner.name} 🎉`;
+  const goEl = document.getElementById('gameover-winner');
+  goEl.innerHTML = `<div class="avatar-win-wrap" style="font-size:2.5rem;display:inline-block;margin-right:10px"><span class="win-${winner.avatar}">${getAvatarEmoji(winner.avatar)}</span></div><span>${winner.name.toUpperCase()} KAZANDI!</span>`;
   const podium = document.getElementById('gameover-podium');
   podium.innerHTML = '';
-  const medals = ['🥇','🥈','🥉'];
+  const medals = ['🥇', '🥈', '🥉'];
   sorted.forEach((p, i) => {
     const div = document.createElement('div');
-    div.className = 'podium-item';
-    div.innerHTML = `<span class="podium-rank">${medals[i] || (i+1)+'.'}</span><span style="font-size:1.2rem">${getAvatarEmoji(p.avatar)}</span><span>${p.name}</span><span class="podium-score">${p.score || 0} puan</span>`;
+    div.className = 'podium-row';
+    div.innerHTML = `<span class="podium-rank">${medals[i] || (i + 1) + '.'}</span><span style="font-size:1.1rem">${getAvatarEmoji(p.avatar)}</span><span style="letter-spacing:1px">${p.name}</span><span class="podium-score">${p.score || 0} PT</span>`;
     podium.appendChild(div);
   });
   showScreen('screen-gameover');
 }
 
 async function restartLobby() {
+  if (!roomRef) return;
   myChosenId = null;
   const snap = await roomRef.once('value');
   const data = snap.val();
+  if (!data) return;
   const keys = Object.keys(data.players || {});
-  // Skorları sıfırla
+  const onlineKeys = keys.filter(k => data.players[k].online !== false);
+  const sortedOnline = onlineKeys.slice().sort();
+  if (sortedOnline[0] !== myId) return;
   const resetPlayers = {};
   keys.forEach(k => { resetPlayers[k] = { ...data.players[k], score: 0 }; });
   await roomRef.update({ status: 'lobby', players: resetPlayers, choices: null, round: 0, targetScore: null });
 }
 
-function updateScoreboard(players) {
-  const sb = document.getElementById('scoreboard');
+function updateScoreBar(players, targetSc) {
+  const sb = document.getElementById('score-bar');
   sb.innerHTML = '';
-  Object.values(players).forEach(p => {
-    const div = document.createElement('div');
-    div.className = 'score-item';
-    div.innerHTML = `<div class="score-avatar">${getAvatarEmoji(p.avatar)}</div><div class="score-label">${p.name}</div><div class="score-value">${p.score || 0}</div>`;
-    sb.appendChild(div);
+  Object.values(players).filter(p => p.online !== false).forEach(p => {
+    const cell = document.createElement('div');
+    cell.className = 'score-cell';
+    const target = targetSc || 7;
+    const pct = Math.min(100, Math.round(((p.score || 0) / target) * 100));
+    cell.innerHTML = `<div class="sc-av">${getAvatarEmoji(p.avatar)}</div><div class="sc-nm">${p.name}</div><div class="sc-pt">${p.score || 0}</div>`;
+    sb.appendChild(cell);
   });
 }
 
 async function playAgain() {
+  if (!roomRef) return;
   myChosenId = null;
   const snap = await roomRef.once('value');
   const data = snap.val();
+  if (!data || data.status !== 'result') return;
   const keys = Object.keys(data.players || {});
-  const isHost = (data.hostId === myId) || (!data.hostId && keys[0] === myId);
-  if (isHost) {
+  const onlineKeys = keys.filter(k => data.players[k].online !== false);
+  const sortedOnline = onlineKeys.slice().sort();
+  if (sortedOnline[0] === myId) {
     const choices = {};
     keys.forEach(k => { choices[k] = null; });
     await roomRef.update({ status: 'playing', choices, round: (data.round || 0) + 1 });
   }
 }
 
-async function leaveGame() {
-  if (roomRef) {
-    roomRef.off();
-    const snap = await roomRef.once('value');
-    const data = snap.val();
-    if (data) {
-      const players = data.players || {};
-      // Bu oyuncuyu offline yap
-      await roomRef.child('players/' + myId + '/online').set(false);
-
-      // Odada online kalan var mı?
-      const remaining = Object.keys(players).filter(k => k !== myId && players[k].online !== false);
-
-      if (remaining.length === 0) {
-        // Kimse kalmadı → odayı tamamen sil
-        await roomRef.remove();
-      } else {
-        // Biri kaldı, host bu kişiyse yeni host ata
-        if (data.hostId === myId) {
-          await roomRef.update({ hostId: remaining[0] });
-        }
-      }
-    }
-  }
-  const savedRoomRef = roomRef;
-  myId = null; myName = ''; myAvatar = null; roomCode = ''; roomRef = null; myChosenId = null;
+function resetLocalState() {
+  if (roomRef) roomRef.off();
+  myId = null; myName = ''; myAvatar = null; roomCode = ''; roomRef = null;
+  myChosenId = null; roomListener = null; isResolvingRound = false;
   document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('selected'));
-  document.getElementById('scoreboard').style.display = 'none';
+  document.getElementById('score-bar').classList.remove('visible');
   document.getElementById('input-name').value = '';
   document.getElementById('input-room').value = '';
+}
+
+async function leaveGame() {
+  const leavingRef = roomRef;
+  const leavingId = myId;
+  resetLocalState();
+  if (leavingRef && leavingId) {
+    try {
+      const snap = await leavingRef.once('value');
+      const data = snap.val();
+      if (data) {
+        const players = data.players || {};
+        await leavingRef.child('players/' + leavingId + '/online').set(false);
+        const remaining = Object.keys(players).filter(k => k !== leavingId && players[k].online !== false);
+        if (remaining.length === 0) await leavingRef.remove();
+        else if (data.hostId === leavingId) await leavingRef.update({ hostId: remaining[0] });
+      }
+    } catch(e) {}
+  }
   refreshRooms();
   showScreen('screen-join');
 }
