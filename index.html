@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>RockIt!</title>
+<title>RockIt! - Evolved</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -15,7 +15,8 @@
   --black: #0A0A0A;
   --gray: #1A1A1A;
   --gray2: #2A2A2A;
-  --gray3: #3A3A3A;
+  --blue: #00D1FF;
+  --purple: #B026FF;
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -25,2660 +26,297 @@ body {
   background: var(--black);
   min-height: 100vh;
   color: var(--white);
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
-/* GRAIN OVERLAY */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  pointer-events: none;
-  z-index: 9999;
-  opacity: 0.4;
-}
-
-/* SCROLLING TICKER */
-.ticker-wrap {
+/* UI ELEMENTS */
+#top-bar {
   position: fixed;
   top: 0; left: 0; right: 0;
-  height: 32px;
-  background: var(--yellow);
-  overflow: hidden;
+  padding: 20px;
+  display: flex;
+  justify-content: space-between;
   z-index: 100;
-  display: flex;
-  align-items: center;
+  pointer-events: none;
 }
-.ticker {
-  display: flex;
-  gap: 0;
-  animation: ticker 18s linear infinite;
-  white-space: nowrap;
-}
-.ticker span {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 15px;
-  color: var(--black);
-  padding: 0 24px;
-  letter-spacing: 2px;
-}
-@keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-/* SCOREBOARD BAR */
-.score-bar {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  background: var(--gray);
-  border-top: 2px solid var(--gray2);
-  display: none;
-  align-items: stretch;
-  z-index: 100;
-  min-height: 56px;
-  overflow-x: auto;
+.stat-box {
+  background: rgba(26, 26, 26, 0.8);
+  border: 1px solid var(--gray3);
+  padding: 10px 15px;
+  font-family: 'Bebas Neue';
+  font-size: 20px;
+  color: var(--yellow);
+  pointer-events: auto;
 }
-.score-bar.visible { display: flex; }
-.score-cell {
-  flex: 1;
-  min-width: 70px;
-  display: flex;
+
+/* CHARACTER GRID REVAMP */
+.char-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 15px;
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.char-card {
+  background: var(--gray);
+  border: 2px solid var(--gray2);
+  padding: 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.char-card.locked {
+  opacity: 0.5;
+  filter: grayscale(1);
+}
+
+.char-card.selected {
+  border-color: var(--yellow);
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(245, 255, 79, 0.2);
+}
+
+.char-emoji { font-size: 40px; display: block; margin-bottom: 10px; }
+.char-name { font-family: 'Bebas Neue'; font-size: 24px; display: block; }
+.char-level { font-size: 12px; color: var(--green); }
+.char-price { font-size: 14px; color: var(--orange); font-weight: bold; }
+
+/* SCREEN MANAGEMENT */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: none;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 6px 4px;
-  border-right: 1px solid var(--gray2);
-  gap: 1px;
-}
-.score-cell:last-child { border-right: none; }
-.score-cell .sc-av { font-size: 1.1rem; line-height: 1; }
-.score-cell .sc-nm { font-size: 0.42rem; letter-spacing: 1px; text-transform: uppercase; color: #666; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 64px; }
-.score-cell .sc-pt { font-family: 'Bebas Neue'; font-size: 1.4rem; color: var(--yellow); line-height: 1; }
-
-/* MAIN LAYOUT */
-.app {
-  padding-top: 32px;
-  padding-bottom: 64px;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  padding: 20px;
+  background: var(--black);
 }
 
-/* HEADER */
-.header {
-  width: 100%;
-  padding: 20px 20px 0;
-  text-align: center;
-}
-.logo {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 4rem;
-  letter-spacing: 4px;
-  color: var(--yellow);
-  line-height: 1;
-  text-shadow: 4px 4px 0 var(--orange);
-  animation: logo-pulse 3s ease-in-out infinite;
-}
-@keyframes logo-pulse {
-  0%, 100% { text-shadow: 4px 4px 0 var(--orange); }
-  50% { text-shadow: 6px 6px 0 var(--orange), -2px -2px 0 var(--green); }
-}
-.logo-sub {
-  font-size: 0.6rem;
-  letter-spacing: 4px;
-  color: #555;
-  text-transform: uppercase;
-  margin-top: -4px;
-}
-
-/* SCREENS */
-.screen { display: none; width: 100%; max-width: 420px; padding: 20px; flex-direction: column; gap: 12px; }
 .screen.active { display: flex; }
 
-/* PANEL */
-.panel {
-  background: var(--gray);
-  border: 1px solid var(--gray2);
-  padding: 20px;
-  position: relative;
-  overflow: visible;
-}
-.panel::before {
-  content: '';
-  position: absolute;
-  top: -1px; left: 12px;
-  width: 40px; height: 3px;
-  background: var(--yellow);
-}
-.panel-title {
-  font-family: 'Bebas Neue';
-  font-size: 1.1rem;
-  letter-spacing: 3px;
-  color: var(--yellow);
-  margin-bottom: 14px;
-  text-transform: uppercase;
-}
-
-/* INPUT */
-input[type="text"] {
-  width: 100%;
-  background: var(--black);
-  border: 1px solid var(--gray3);
-  border-bottom: 2px solid var(--gray3);
-  color: var(--white);
-  font-family: 'DM Mono', monospace;
-  font-size: 0.95rem;
-  padding: 12px 14px;
-  outline: none;
-  margin-bottom: 10px;
-  transition: border-color 0.15s;
-  letter-spacing: 1px;
-}
-input[type="text"]:focus { border-color: var(--yellow); border-bottom-color: var(--yellow); }
-input[type="text"]::placeholder { color: #444; }
-
-/* BUTTONS */
 .btn {
-  width: 100%;
-  padding: 14px;
+  font-family: 'Bebas Neue';
+  padding: 15px 40px;
+  font-size: 24px;
   border: none;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.2rem;
-  letter-spacing: 3px;
   cursor: pointer;
-  transition: all 0.1s;
-  position: relative;
-  overflow: hidden;
+  margin-top: 20px;
+  transition: transform 0.2s;
 }
-.btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(255,255,255,0);
-  transition: background 0.1s;
-}
-.btn:active::after { background: rgba(255,255,255,0.1); }
-.btn-yellow { background: var(--yellow); color: var(--black); box-shadow: 4px 4px 0 var(--orange); }
-.btn-yellow:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 var(--orange); }
-.btn-yellow:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--orange); }
-.btn-yellow:disabled { background: #333; color: #666; box-shadow: none; cursor: not-allowed; transform: none; }
-.btn-ghost { background: transparent; color: #555; border: 1px solid var(--gray3); font-size: 0.8rem; letter-spacing: 2px; margin-top: 4px; }
-.btn-ghost:hover { color: var(--orange); border-color: var(--orange); }
-.btn-orange { background: var(--orange); color: var(--white); box-shadow: 4px 4px 0 #8B2200; }
-.btn-orange:hover { transform: translate(-2px,-2px); box-shadow: 6px 6px 0 #8B2200; }
-.btn-orange:active { transform: translate(2px,2px); box-shadow: 2px 2px 0 #8B2200; }
 
-/* AVATAR GRID */
-.avatar-grid {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 6px;
-  margin-bottom: 14px;
-}
-.avatar-btn {
-  aspect-ratio: 1;
-  background: var(--black);
-  border: 1px solid var(--gray3);
-  font-size: 1.5rem;
-  cursor: pointer;
-  transition: all 0.1s;
+.btn-yellow { background: var(--yellow); color: var(--black); }
+.btn-yellow:hover { transform: scale(1.05); }
+
+/* GAMEPLAY UI */
+#game-arena {
   display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.avatar-btn:hover { border-color: var(--yellow); background: var(--gray2); }
-.avatar-btn.selected {
-  border: 2px solid var(--yellow);
-  background: var(--gray2);
-  box-shadow: 0 0 0 2px var(--orange);
-  transform: scale(1.06);
-}
-
-/* ROOMS LIST */
-.rooms-list { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
-.room-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  background: var(--black);
-  border: 1px solid var(--gray3);
-  gap: 10px;
-}
-.room-code-text { font-family: 'Bebas Neue'; font-size: 1.1rem; letter-spacing: 3px; color: var(--yellow); }
-.room-info { font-size: 0.65rem; color: #555; letter-spacing: 1px; margin-top: 1px; }
-.room-empty { color: #444; font-size: 0.75rem; letter-spacing: 1px; text-align: center; padding: 16px 0; }
-.btn-join-sm {
-  padding: 6px 14px;
-  background: var(--yellow);
-  color: var(--black);
-  border: none;
-  font-family: 'Bebas Neue';
-  font-size: 0.9rem;
-  letter-spacing: 2px;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: opacity 0.1s;
-}
-.btn-join-sm:hover { opacity: 0.85; }
-
-/* LOBBY CODE */
-.lobby-code-big {
-  font-family: 'Bebas Neue';
-  font-size: 3rem;
-  letter-spacing: 12px;
-  color: var(--yellow);
-  text-align: center;
-  margin: 8px 0;
-  text-shadow: 3px 3px 0 var(--orange);
-}
-.lobby-hint { font-size: 0.65rem; color: #555; text-align: center; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; }
-
-/* PLAYERS LIST */
-.players-list { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
-.player-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  background: var(--black);
-  border-left: 3px solid var(--green);
-  font-size: 0.85rem;
-}
-.player-item.waiting-slot { border-left-color: var(--gray3); }
-.player-item.waiting-slot span { color: #444; }
-
-/* TARGET SCORE */
-.score-opts { display: flex; gap: 5px; margin-bottom: 14px; }
-.score-opt {
-  flex: 1;
-  padding: 10px 4px;
-  background: var(--black);
-  border: 1px solid var(--gray3);
-  color: #555;
-  font-family: 'Bebas Neue';
-  font-size: 1.2rem;
-  letter-spacing: 1px;
-  cursor: pointer;
-  text-align: center;
-  transition: all 0.1s;
-}
-.score-opt:hover { border-color: var(--yellow); color: var(--yellow); }
-.score-opt.selected { background: var(--yellow); color: var(--black); border-color: var(--yellow); }
-
-/* PICK SCREEN */
-.pick-header {
-  text-align: center;
-  margin-bottom: 16px;
-}
-.pick-who {
-  font-family: 'Bebas Neue';
-  font-size: 2.2rem;
-  letter-spacing: 3px;
-  color: var(--yellow);
-  line-height: 1;
-}
-.pick-sub { font-size: 0.65rem; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
-
-.game-choices {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  margin: 8px 0 16px;
-}
-.game-btn {
-  flex: 1;
-  aspect-ratio: 1;
-  max-width: 110px;
-  background: var(--black);
-  border: 2px solid var(--gray3);
-  font-size: 3rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.12s;
-  position: relative;
-}
-.game-btn::after {
-  content: attr(data-label);
-  position: absolute;
-  bottom: 6px;
-  left: 0; right: 0;
-  font-family: 'Bebas Neue';
-  font-size: 0.65rem;
-  letter-spacing: 2px;
-  color: #444;
-  text-align: center;
-}
-.game-btn:hover {
-  border-color: var(--yellow);
-  background: var(--gray2);
-  transform: translateY(-4px);
-  box-shadow: 0 8px 0 var(--orange);
-}
-.game-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 var(--orange); }
-.game-btn.selected {
-  border-color: var(--yellow);
-  background: var(--gray2);
-  box-shadow: 0 0 0 2px var(--yellow), 4px 4px 0 var(--orange);
-}
-
-/* WAITING */
-.waiting-center { text-align: center; padding: 8px 0 16px; }
-.waiting-title { font-family: 'Bebas Neue'; font-size: 2rem; letter-spacing: 4px; color: var(--white); }
-.waiting-bar {
-  display: flex;
-  gap: 4px;
-  justify-content: center;
-  margin: 10px 0 4px;
-}
-.w-dot {
-  width: 6px; height: 6px;
-  background: var(--yellow);
-  animation: wdot 1.2s ease-in-out infinite;
-}
-.w-dot:nth-child(2) { animation-delay: 0.2s; background: var(--orange); }
-.w-dot:nth-child(3) { animation-delay: 0.4s; background: var(--green); }
-@keyframes wdot { 0%,80%,100%{ transform: scaleY(0.4); opacity: 0.4; } 40%{ transform: scaleY(1); opacity: 1; } }
-.waiting-count { font-size: 0.65rem; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 14px; }
-
-.wait-player {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  background: var(--black);
-  border-left: 3px solid var(--gray3);
-  font-size: 0.85rem;
-  margin-bottom: 5px;
-}
-.wait-player.done { border-left-color: var(--green); }
-
-/* RESULT */
-.result-header { text-align: center; margin-bottom: 12px; }
-.result-headline {
-  font-family: 'Bebas Neue';
-  font-size: 2.8rem;
-  letter-spacing: 3px;
-  line-height: 1;
-}
-.result-headline.win { color: var(--yellow); text-shadow: 3px 3px 0 var(--orange); }
-.result-headline.draw { color: var(--white); }
-.result-headline.lose { color: var(--orange); }
-.result-sub-text { font-size: 0.65rem; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
-
-.result-players {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
-  margin: 20px 0 28px;
-  overflow: visible;
-}
-.result-card-player {
-  background: var(--black);
-  border: 1px solid var(--gray3);
-  padding: 10px 8px;
-  text-align: center;
-  min-width: 60px;
-  flex: 1;
-  max-width: 80px;
-  position: relative;
-  overflow: visible;
-}
-.result-card-player.winner {
-  border-color: var(--yellow);
-  box-shadow: 3px 3px 0 var(--orange);
-}
-.result-card-player.winner::before {
-  content: '★';
-  position: absolute;
-  top: -10px; left: 50%;
-  transform: translateX(-50%);
-  font-size: 14px;
-  color: var(--yellow);
-}
-.rcp-avatar { font-size: 1.5rem; line-height: 1; }
-.rcp-name { font-size: 0.45rem; color: #555; letter-spacing: 1px; text-transform: uppercase; margin: 3px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 70px; }
-.rcp-choice { font-size: 1.4rem; line-height: 1; }
-
-.summary-strip {
-  display: flex;
-  gap: 5px;
-  margin-bottom: 12px;
-}
-.sum-item {
-  flex: 1;
-  padding: 8px 4px;
-  background: var(--black);
-  border: 1px solid var(--gray3);
-  text-align: center;
-}
-.sum-item.win-item { border-color: var(--yellow); }
-.sum-emoji { font-size: 1.2rem; }
-.sum-count { font-family: 'Bebas Neue'; font-size: 1rem; color: var(--yellow); }
-.sum-label { font-size: 0.5rem; color: #555; letter-spacing: 1px; text-transform: uppercase; }
-
-/* GAME OVER */
-.gameover-title {
-  font-family: 'Bebas Neue';
-  font-size: 3rem;
-  letter-spacing: 4px;
-  color: var(--yellow);
-  text-shadow: 4px 4px 0 var(--orange);
-  text-align: center;
-  animation: shake 0.5s ease-in-out;
-}
-@keyframes shake {
-  0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)}
-}
-.podium { display: flex; flex-direction: column; gap: 5px; margin: 14px 0; }
-.podium-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  background: var(--black);
-  border-left: 4px solid var(--gray3);
-}
-.podium-row:nth-child(1) { border-left-color: var(--yellow); }
-.podium-row:nth-child(2) { border-left-color: #aaa; }
-.podium-row:nth-child(3) { border-left-color: #c67; }
-.podium-rank { font-family: 'Bebas Neue'; font-size: 1.4rem; min-width: 28px; color: var(--yellow); }
-.podium-score { margin-left: auto; font-family: 'Bebas Neue'; font-size: 1.2rem; color: var(--yellow); }
-
-/* ERROR */
-.err { color: var(--orange); font-size: 0.7rem; letter-spacing: 1px; min-height: 16px; margin-bottom: 8px; }
-
-/* SECTION LABEL */
-.sec-label { font-size: 0.6rem; color: #555; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 8px; }
-.divider-line { width: 100%; height: 1px; background: var(--gray2); margin: 10px 0; }
-
-/* ENTER ANIMATION */
-.screen.active { animation: screen-in 0.25s ease-out; }
-@keyframes screen-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-/* GLITCH on logo hover */
-.logo:hover { animation: glitch 0.3s steps(2) infinite; }
-@keyframes glitch {
-  0%   { text-shadow: 4px 4px 0 var(--orange); clip-path: inset(0 0 60% 0); }
-  25%  { text-shadow: -4px -4px 0 var(--green); clip-path: inset(40% 0 0 0); }
-  50%  { text-shadow: 4px 4px 0 var(--orange); clip-path: inset(0); }
-  75%  { text-shadow: -2px 2px 0 var(--yellow); clip-path: inset(20% 0 30% 0); }
-  100% { text-shadow: 4px 4px 0 var(--orange); clip-path: inset(0); }
-}
-
-/* ===== AVATAR WIN ANIMATIONS ===== */
-.avatar-win-wrap {
-  position: relative;
-  display: inline-block;
-  font-size: 3.5rem;
-  line-height: 1;
-}
-
-/* PANDA - sağa sola dans */
-.win-panda { animation: panda-dance 0.5s ease-in-out infinite alternate; }
-@keyframes panda-dance {
-  from { transform: rotate(-15deg) scale(1.1); }
-  to   { transform: rotate(15deg) scale(1.2); }
-}
-
-/* UNICORN - uçuş + gökkuşağı iz */
-.win-unicorn { animation: unicorn-fly 1.2s ease-in-out infinite; }
-@keyframes unicorn-fly {
-  0%   { transform: translateY(0) rotate(-5deg); }
-  30%  { transform: translateY(-18px) rotate(5deg); }
-  60%  { transform: translateY(-8px) rotate(-3deg); }
-  100% { transform: translateY(0) rotate(-5deg); }
-}
-.win-unicorn::after {
-  content: '🌈✨🌟';
-  position: absolute;
-  right: -60px; top: 50%;
-  font-size: 0.9rem;
-  animation: rainbow-trail 1.2s ease-in-out infinite;
-  pointer-events: none;
-}
-@keyframes rainbow-trail {
-  0%   { opacity: 0; transform: translateX(0) translateY(-50%); }
-  50%  { opacity: 1; transform: translateX(10px) translateY(-50%); }
-  100% { opacity: 0; transform: translateX(20px) translateY(-50%); }
-}
-
-/* KOALA - sarsilma + zzz */
-.win-koala { animation: koala-shake 0.4s ease-in-out infinite; }
-@keyframes koala-shake {
-  0%,100% { transform: rotate(-8deg) scale(1.05); }
-  50%      { transform: rotate(8deg) scale(1.15); }
-}
-.win-koala::after {
-  content: '💤💤';
-  position: absolute;
-  top: -20px; right: -24px;
-  font-size: 0.8rem;
-  animation: zzz-float 1.5s ease-in-out infinite;
-}
-@keyframes zzz-float {
-  0%   { opacity: 0; transform: translateY(0) scale(0.5); }
-  50%  { opacity: 1; transform: translateY(-12px) scale(1); }
-  100% { opacity: 0; transform: translateY(-24px) scale(0.7); }
-}
-
-/* SINCAP - yukarı zıplama */
-.win-sincap { animation: sincap-jump 0.6s cubic-bezier(0.36,0.07,0.19,0.97) infinite; }
-@keyframes sincap-jump {
-  0%,100% { transform: translateY(0) scaleY(1); }
-  40%      { transform: translateY(-20px) scaleY(1.1); }
-  60%      { transform: translateY(-16px) scaleY(1.05); }
-  80%      { transform: translateY(0) scaleX(1.15) scaleY(0.85); }
-}
-.win-sincap::after {
-  content: '🌰🌰';
-  position: absolute;
-  bottom: -18px; left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.75rem;
-  animation: nuts-bounce 0.6s ease-in-out infinite;
-}
-@keyframes nuts-bounce {
-  0%,100% { opacity: 1; transform: translateX(-50%) scale(1); }
-  40%      { opacity: 0.3; transform: translateX(-50%) scale(0.7); }
-}
-
-/* GÖKKUŞAĞI - parlama + yağmur */
-.win-gokkusagi { animation: rainbow-glow 0.8s ease-in-out infinite alternate; }
-@keyframes rainbow-glow {
-  from { filter: drop-shadow(0 0 6px #ff0080) brightness(1.1); transform: scale(1.05); }
-  to   { filter: drop-shadow(0 0 20px #00ffff) brightness(1.4); transform: scale(1.2); }
-}
-.win-gokkusagi::before {
-  content: '💧💧💧💧💧';
-  position: absolute;
-  bottom: -22px; left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.65rem;
-  letter-spacing: 2px;
-  animation: rain-fall 0.8s linear infinite;
-  white-space: nowrap;
-}
-@keyframes rain-fall {
-  0%   { opacity: 0; transform: translateX(-50%) translateY(-4px); }
-  50%  { opacity: 1; }
-  100% { opacity: 0; transform: translateX(-50%) translateY(8px); }
-}
-
-/* EJDERHA - ateş püskürtme */
-.win-ejder { animation: dragon-roar 0.7s ease-in-out infinite; }
-@keyframes dragon-roar {
-  0%,100% { transform: scale(1) rotate(-5deg); }
-  30%      { transform: scale(1.25) rotate(5deg); }
-  60%      { transform: scale(1.1) rotate(-3deg); }
-}
-.win-ejder::after {
-  content: '🔥💥🔥';
-  position: absolute;
-  right: -56px; top: 10%;
-  font-size: 1.1rem;
-  animation: fire-burst 0.7s ease-out infinite;
-  transform-origin: left center;
-  pointer-events: none;
-}
-@keyframes fire-burst {
-  0%   { opacity: 0; transform: scaleX(0.2) translateX(-10px); }
-  40%  { opacity: 1; transform: scaleX(1.2) translateX(4px); }
-  70%  { opacity: 0.8; transform: scaleX(1) translateX(6px); }
-  100% { opacity: 0; transform: scaleX(0.5) translateX(12px); }
-}
-
-/* RENKLI KALP - kalp patlaması */
-.win-kalp { animation: heart-beat 0.5s ease-in-out infinite; }
-@keyframes heart-beat {
-  0%,100% { transform: scale(1); filter: drop-shadow(0 0 4px #ff69b4); }
-  25%      { transform: scale(1.3); filter: drop-shadow(0 0 16px #ff1493); }
-  50%      { transform: scale(1.1); filter: drop-shadow(0 0 8px #ff69b4); }
-}
-.win-kalp::after {
-  content: '💕💖💗';
-  position: absolute;
-  top: -24px; left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.8rem;
-  animation: hearts-float 1s ease-out infinite;
-  white-space: nowrap;
-}
-@keyframes hearts-float {
-  0%   { opacity: 0; transform: translateX(-50%) translateY(0) scale(0.5); }
-  50%  { opacity: 1; transform: translateX(-50%) translateY(-14px) scale(1); }
-  100% { opacity: 0; transform: translateX(-50%) translateY(-28px) scale(0.8); }
-}
-
-/* HARRY POTTER - büyü efekti */
-.win-harry { animation: magic-spin 1s ease-in-out infinite; }
-@keyframes magic-spin {
-  0%,100% { transform: rotate(-10deg) scale(1); }
-  25%      { transform: rotate(10deg) scale(1.2); filter: drop-shadow(0 0 12px #9f7aea); }
-  50%      { transform: rotate(-8deg) scale(1.15); filter: drop-shadow(0 0 20px #805ad5); }
-  75%      { transform: rotate(8deg) scale(1.1); filter: drop-shadow(0 0 8px #9f7aea); }
-}
-.win-harry::after {
-  content: '⚡✨⭐';
-  position: absolute;
-  top: -20px; left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.85rem;
-  animation: magic-sparks 0.8s ease-in-out infinite;
-  white-space: nowrap;
-}
-@keyframes magic-sparks {
-  0%,100% { opacity: 0; transform: translateX(-50%) rotate(0deg) scale(0.5); }
-  50%      { opacity: 1; transform: translateX(-50%) rotate(180deg) scale(1.2); }
-}
-
-/* PERİ - kanat çırpma + peri tozu */
-.win-peri { animation: fairy-flutter 0.4s ease-in-out infinite alternate; }
-@keyframes fairy-flutter {
-  from { transform: translateY(-6px) rotate(-8deg) scale(1.05); }
-  to   { transform: translateY(6px) rotate(8deg) scale(1.15); }
-}
-.win-peri::after {
-  content: '✨🌟💫✨';
-  position: absolute;
-  bottom: -18px; left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.7rem;
-  animation: fairy-dust 0.8s ease-out infinite;
-  white-space: nowrap;
-}
-@keyframes fairy-dust {
-  0%   { opacity: 0; transform: translateX(-50%) scale(0.5); }
-  60%  { opacity: 1; transform: translateX(-50%) scale(1) translateY(-4px); }
-  100% { opacity: 0; transform: translateX(-50%) scale(0.8) translateY(-10px); }
-}
-
-/* TAVŞAN - süper zıplama */
-.win-tavsan { animation: bunny-hop 0.5s cubic-bezier(0.36,0.07,0.19,0.97) infinite; }
-@keyframes bunny-hop {
-  0%,100% { transform: translateY(0) scaleX(1) scaleY(1); }
-  20%      { transform: translateY(-24px) scaleX(0.9) scaleY(1.15); }
-  40%      { transform: translateY(-20px) scaleX(0.95) scaleY(1.1); }
-  70%      { transform: translateY(0) scaleX(1.2) scaleY(0.8); }
-  85%      { transform: translateY(-5px) scaleX(1) scaleY(1.05); }
-}
-.win-tavsan::after {
-  content: '🥕🥕';
-  position: absolute;
-  bottom: -20px; right: -20px;
-  font-size: 0.8rem;
-  animation: carrot-spin 0.5s linear infinite;
-}
-@keyframes carrot-spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
-/* ORTAK WIN WRAPPER */
-.avatar-win-wrap .confetti {
-  position: absolute;
-  top: -30px; left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.7rem;
-  pointer-events: none;
-  animation: confetti-pop 0.8s ease-out infinite;
-  white-space: nowrap;
-}
-@keyframes confetti-pop {
-  0%   { opacity: 0; transform: translateX(-50%) translateY(0); }
-  30%  { opacity: 1; }
-  100% { opacity: 0; transform: translateX(-50%) translateY(-30px); }
-}
-
-/* ===== AVATAR SVG GELİŞMİŞ WIN ANİMASYONLARI ===== */
-
-/* Genel sahne: SVG animasyonu için wrapper */
-.win-avatar-stage svg {
-  width: 100%; height: 100%;
-}
-
-/* PANDA: Soldan yürür → ortada oturur → bambu yer */
-@keyframes panda-walk-in {
-  0%   { transform: translateX(-120%) translateY(0) rotate(0deg); }
-  40%  { transform: translateX(0%) translateY(0) rotate(-5deg); }
-  55%  { transform: translateX(0%) translateY(-8px) rotate(5deg); }
-  70%  { transform: translateX(0%) translateY(0) rotate(-3deg); }
-  80%  { transform: translateX(0%) translateY(0) rotate(0deg) scale(1); }
-  85%  { transform: translateX(0%) translateY(0) scale(1.05); }
-  100% { transform: translateX(0%) translateY(0) scale(1); }
-}
-@keyframes panda-eat {
-  0%,100% { transform: rotate(-3deg) scale(1); }
-  30%     { transform: rotate(5deg) scale(1.06) translateY(-5px); }
-  60%     { transform: rotate(-4deg) scale(1.04); }
-}
-.champion-panda { animation: panda-walk-in 1.4s cubic-bezier(0.22,1,0.36,1) forwards, panda-eat 0.8s ease-in-out 1.5s infinite !important; }
-
-/* UNICORN: Yukarıdan uçarak gelir → boynuz parlar */
-@keyframes unicorn-fly-in {
-  0%   { transform: translateY(-130%) rotate(-15deg) scale(0.6); opacity: 0; }
-  50%  { transform: translateY(10%) rotate(8deg) scale(1.1); opacity: 1; }
-  70%  { transform: translateY(-5%) rotate(-4deg) scale(1.05); }
-  85%  { transform: translateY(2%) rotate(2deg) scale(1); }
-  100% { transform: translateY(0%) rotate(0deg) scale(1); opacity: 1; }
-}
-@keyframes unicorn-hover {
-  0%,100% { transform: translateY(0) rotate(-3deg); filter: drop-shadow(0 0 16px #ffe040) drop-shadow(0 0 32px #ff80d0); }
-  50%     { transform: translateY(-14px) rotate(3deg); filter: drop-shadow(0 0 30px #ffe040) drop-shadow(0 0 60px #ff40ff); }
-}
-.champion-unicorn { animation: unicorn-fly-in 1.2s cubic-bezier(0.22,1,0.36,1) forwards, unicorn-hover 1.4s ease-in-out 1.3s infinite !important; }
-
-/* KOALA: Sağdan düşer → ağaçta oturur → güler (sallanır) */
-@keyframes koala-fall-in {
-  0%   { transform: translateX(130%) translateY(-80%) rotate(30deg); }
-  45%  { transform: translateX(0%) translateY(8%) rotate(-10deg); }
-  60%  { transform: translateX(0%) translateY(-4%) rotate(5deg); }
-  75%  { transform: translateX(0%) translateY(2%) rotate(-2deg); }
-  100% { transform: translateX(0%) translateY(0%) rotate(0deg); }
-}
-@keyframes koala-laugh {
-  0%,100% { transform: scale(1) rotate(-4deg); }
-  25%     { transform: scale(1.1) rotate(4deg) translateY(-6px); }
-  50%     { transform: scale(1.06) rotate(-2deg); }
-  75%     { transform: scale(1.08) rotate(3deg) translateY(-3px); }
-}
-.champion-koala { animation: koala-fall-in 1.3s cubic-bezier(0.22,1,0.36,1) forwards, koala-laugh 0.7s ease-in-out 1.4s infinite !important; }
-
-/* SINCAP: Soldan koşar → fındık alır → ekrandan çıkar */
-@keyframes sincap-run {
-  0%   { transform: translateX(-130%) scaleX(-1); }
-  35%  { transform: translateX(0%) scaleX(-1); }
-  50%  { transform: translateX(0%) scaleX(-1) translateY(-10px); }
-  65%  { transform: translateX(0%) scaleX(-1) translateY(0); }
-  75%  { transform: translateX(0%) scaleX(-1) rotate(-5deg); }
-  88%  { transform: translateX(0%) scaleX(-1) rotate(5deg); }
-  100% { transform: translateX(130%) scaleX(-1); }
-}
-.champion-sincap { animation: sincap-run 3s cubic-bezier(0.22,1,0.36,1) infinite !important; }
-
-/* ŞÖVALYE: Sağdan koşar → kılıcı ekrana vurur */
-@keyframes knight-charge {
-  0%   { transform: translateX(130%) rotate(0deg); }
-  40%  { transform: translateX(0%) rotate(0deg); }
-  55%  { transform: translateX(0%) rotate(-20deg) translateY(-10px); }
-  65%  { transform: translateX(0%) rotate(15deg) translateY(5px); }
-  75%  { transform: translateX(0%) rotate(-10deg); }
-  85%  { transform: translateX(0%) rotate(5deg); }
-  100% { transform: translateX(0%) rotate(0deg); }
-}
-@keyframes knight-strike {
-  0%,100% { transform: rotate(0deg) scale(1); filter: drop-shadow(0 0 8px #6888c8); }
-  30%     { transform: rotate(-25deg) scale(1.1) translateY(-8px); filter: drop-shadow(0 0 24px #aaccff); }
-  50%     { transform: rotate(20deg) scale(1.15); filter: drop-shadow(0 0 40px #ffffff); }
-  70%     { transform: rotate(-10deg) scale(1.05); filter: drop-shadow(0 0 16px #6888c8); }
-}
-.champion-sovalye { animation: knight-charge 1.2s cubic-bezier(0.22,1,0.36,1) forwards, knight-strike 1.0s ease-in-out 1.3s infinite !important; }
-
-/* EJDERHA: Yukarıdan iner → ortada durur → ateş püskürtür */
-@keyframes dragon-land {
-  0%   { transform: translateY(-130%) scale(0.5) rotate(-20deg); opacity: 0; }
-  50%  { transform: translateY(15%) scale(1.15) rotate(8deg); opacity: 1; }
-  68%  { transform: translateY(-5%) scale(1.05) rotate(-4deg); }
-  82%  { transform: translateY(2%) scale(1) rotate(2deg); }
-  100% { transform: translateY(0%) scale(1) rotate(0deg); opacity: 1; }
-}
-@keyframes dragon-breathe {
-  0%,100% { transform: scale(1) rotate(-3deg); filter: drop-shadow(0 0 10px #ff6600); }
-  20%     { transform: scale(1.12) rotate(5deg); filter: drop-shadow(0 0 40px #ff4400) drop-shadow(0 0 80px #ffaa00); }
-  40%     { transform: scale(1.08) rotate(-4deg); filter: drop-shadow(0 0 60px #ff2200); }
-  60%     { transform: scale(1.15) rotate(4deg); filter: drop-shadow(0 0 50px #ffcc00); }
-}
-.champion-ejder { animation: dragon-land 1.3s cubic-bezier(0.22,1,0.36,1) forwards, dragon-breathe 0.9s ease-in-out 1.4s infinite !important; }
-
-/* SAMURAY: Soldan koşar → yıldız fırlatır → poz verir */
-@keyframes samurai-rush {
-  0%   { transform: translateX(-130%) rotate(0deg); }
-  38%  { transform: translateX(0%) rotate(0deg); }
-  50%  { transform: translateX(0%) rotate(-15deg) scale(1.1); }
-  62%  { transform: translateX(0%) rotate(10deg) scale(1.05); }
-  75%  { transform: translateX(0%) rotate(-5deg); }
-  100% { transform: translateX(0%) rotate(0deg); }
-}
-@keyframes samurai-pose {
-  0%,100% { transform: rotate(0deg) scale(1); filter: drop-shadow(0 0 8px #c83030); }
-  25%     { transform: rotate(-12deg) scale(1.08) translateY(-6px); filter: drop-shadow(0 0 30px #ff4444); }
-  50%     { transform: rotate(10deg) scale(1.12); filter: drop-shadow(0 0 50px #ffaa00); }
-  75%     { transform: rotate(-6deg) scale(1.05); filter: drop-shadow(0 0 20px #c83030); }
-}
-.champion-samuray { animation: samurai-rush 1.1s cubic-bezier(0.22,1,0.36,1) forwards, samurai-pose 0.8s ease-in-out 1.2s infinite !important; }
-
-/* BÜYÜCÜ: Dumandan belirir (scale 0 → 1, opacity 0 → 1 + dönüş) */
-@keyframes wizard-appear {
-  0%   { transform: scale(0) rotate(-180deg); opacity: 0; filter: blur(20px) brightness(3); }
-  40%  { transform: scale(1.2) rotate(15deg); opacity: 0.8; filter: blur(4px) brightness(2); }
-  65%  { transform: scale(0.92) rotate(-8deg); opacity: 1; filter: blur(1px) brightness(1.3); }
-  80%  { transform: scale(1.05) rotate(4deg); opacity: 1; filter: blur(0) brightness(1); }
-  100% { transform: scale(1) rotate(0deg); opacity: 1; filter: none; }
-}
-@keyframes wizard-cast {
-  0%,100% { transform: scale(1) rotate(-5deg); filter: drop-shadow(0 0 10px #9f7aea); }
-  30%     { transform: scale(1.1) rotate(8deg) translateY(-8px); filter: drop-shadow(0 0 40px #c0a0ff) drop-shadow(0 0 80px #7040c0); }
-  60%     { transform: scale(1.06) rotate(-5deg); filter: drop-shadow(0 0 60px #e0c0ff); }
-}
-.champion-harry { animation: wizard-appear 1.5s cubic-bezier(0.22,1,0.36,1) forwards, wizard-cast 1.0s ease-in-out 1.6s infinite !important; }
-
-/* PERİ: Uçarak soldan gelir → değnek sallar */
-@keyframes fairy-fly-in {
-  0%   { transform: translateX(-130%) translateY(20%) rotate(-20deg) scale(0.6); opacity: 0; }
-  45%  { transform: translateX(8%) translateY(-8%) rotate(10deg) scale(1.1); opacity: 1; }
-  65%  { transform: translateX(-3%) translateY(3%) rotate(-5deg) scale(1.02); }
-  82%  { transform: translateX(1%) translateY(-2%) rotate(3deg) scale(1); }
-  100% { transform: translateX(0%) translateY(0%) rotate(0deg) scale(1); opacity: 1; }
-}
-@keyframes fairy-wand {
-  0%,100% { transform: translateY(0) rotate(-6deg); filter: drop-shadow(0 0 12px #ff80ff) drop-shadow(0 0 24px #ffccff); }
-  25%     { transform: translateY(-10px) rotate(8deg); filter: drop-shadow(0 0 30px #ff40ff) drop-shadow(0 0 60px #ffffff); }
-  50%     { transform: translateY(-6px) rotate(-4deg); filter: drop-shadow(0 0 50px #c040ff) drop-shadow(0 0 100px #ff80ff); }
-  75%     { transform: translateY(-12px) rotate(6deg); filter: drop-shadow(0 0 40px #ff80ff); }
-}
-.champion-peri { animation: fairy-fly-in 1.3s cubic-bezier(0.22,1,0.36,1) forwards, fairy-wand 0.9s ease-in-out 1.4s infinite !important; }
-
-/* TAVŞAN: Sağdan zıplayarak gelir → havuç yer */
-@keyframes bunny-hop-in {
-  0%   { transform: translateX(130%) translateY(0); }
-  20%  { transform: translateX(70%) translateY(-30px); }
-  35%  { transform: translateX(30%) translateY(0); }
-  50%  { transform: translateX(10%) translateY(-20px); }
-  65%  { transform: translateX(0%) translateY(0); }
-  75%  { transform: translateX(0%) translateY(-8px); }
-  85%  { transform: translateX(0%) translateY(0) scaleX(1.1) scaleY(0.9); }
-  100% { transform: translateX(0%) translateY(0) scaleX(1) scaleY(1); }
-}
-@keyframes bunny-munch {
-  0%,100% { transform: rotate(-4deg) scale(1); }
-  20%     { transform: rotate(5deg) scale(1.06) translateY(-4px); }
-  40%     { transform: rotate(-3deg) scale(1.03); }
-  60%     { transform: rotate(4deg) scale(1.07) translateY(-3px); }
-  80%     { transform: rotate(-2deg) scale(1.04); }
-}
-.champion-tavsan { animation: bunny-hop-in 1.4s cubic-bezier(0.22,1,0.36,1) forwards, bunny-munch 0.6s ease-in-out 1.5s infinite !important; }
-
-/* ===== FULLSCREEN WIN OVERLAY ===== */
-#win-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.92);
-  z-index: 9000;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 20px;
+  gap: 40px;
 }
-#win-overlay.show { display: flex; animation: overlay-in 0.4s ease-out; }
-@keyframes overlay-in {
-  from { opacity: 0; transform: scale(0.95); }
-  to   { opacity: 1; transform: scale(1); }
-}
-.win-overlay-title {
-  font-family: 'Bebas Neue';
-  font-size: 3.5rem;
-  letter-spacing: 6px;
-  color: var(--yellow);
-  text-shadow: 5px 5px 0 var(--orange);
-  animation: win-title-pulse 0.6s ease-in-out infinite alternate;
-  margin-bottom: 8px;
-}
-@keyframes win-title-pulse {
-  from { text-shadow: 5px 5px 0 var(--orange); letter-spacing: 6px; }
-  to   { text-shadow: 8px 8px 0 var(--orange), -2px -2px 0 var(--green); letter-spacing: 8px; }
-}
-.win-overlay-name {
-  font-family: 'Bebas Neue';
-  font-size: 2rem;
-  letter-spacing: 4px;
-  color: var(--white);
-  margin-bottom: 24px;
-}
-.win-avatar-stage {
-  width: 50vw;
-  height: 50vw;
-  max-width: 320px;
-  max-height: 320px;
-  position: relative;
+
+.choice-container {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 24px;
-}
-.win-avatar-stage svg {
-  width: 100%;
-  height: 100%;
-  filter: drop-shadow(0 0 24px var(--yellow)) drop-shadow(0 0 48px var(--orange));
-  animation: champion-dance 0.8s ease-in-out infinite;
-}
-@keyframes champion-dance {
-  0%   { transform: translateY(0) rotate(-4deg) scale(1); filter: drop-shadow(0 0 24px var(--yellow)); }
-  25%  { transform: translateY(-20px) rotate(4deg) scale(1.08); filter: drop-shadow(0 0 40px var(--yellow)) drop-shadow(0 0 60px var(--orange)); }
-  50%  { transform: translateY(-10px) rotate(-2deg) scale(1.05); filter: drop-shadow(0 0 32px var(--green)); }
-  75%  { transform: translateY(-16px) rotate(3deg) scale(1.06); filter: drop-shadow(0 0 40px var(--yellow)); }
-  100% { transform: translateY(0) rotate(-4deg) scale(1); filter: drop-shadow(0 0 24px var(--yellow)); }
+  gap: 20px;
 }
 
-/* Confetti particles */
-.confetti-particle {
-  position: absolute;
-  width: 8px; height: 8px;
-  border-radius: 2px;
-  animation: confetti-fall linear infinite;
-  pointer-events: none;
-  z-index: 9001;
-}
-@keyframes confetti-fall {
-  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
-}
-
-/* Special per-avatar dance overrides */
-.champion-panda    { animation: panda-champion 0.5s ease-in-out infinite alternate !important; }
-@keyframes panda-champion { from { transform: rotate(-20deg) scale(1.0); } to { transform: rotate(20deg) scale(1.15); } }
-
-.champion-unicorn  { animation: unicorn-champion 1s ease-in-out infinite !important; }
-@keyframes unicorn-champion { 0%,100%{transform:translateY(0) rotate(-8deg) scale(1)} 50%{transform:translateY(-30px) rotate(8deg) scale(1.12)} }
-
-.champion-ejder    { animation: dragon-champion 0.7s ease-in-out infinite !important; }
-@keyframes dragon-champion { 0%,100%{transform:scale(1) rotate(-5deg)} 30%{transform:scale(1.18) rotate(5deg)} 60%{transform:scale(1.08) rotate(-3deg)} }
-
-.champion-sovalye  { animation: knight-champion 0.9s ease-in-out infinite !important; }
-@keyframes knight-champion { 0%,100%{transform:translateY(0) rotate(0deg)} 25%{transform:translateY(-14px) rotate(-6deg)} 75%{transform:translateY(-8px) rotate(6deg)} }
-
-.champion-samuray  { animation: samurai-champion 0.6s ease-in-out infinite !important; }
-@keyframes samurai-champion { 0%,100%{transform:rotate(-8deg) scale(1)} 50%{transform:rotate(8deg) scale(1.15) skewX(-5deg)} }
-
-.champion-harry    { animation: wizard-champion 1s ease-in-out infinite !important; }
-@keyframes wizard-champion { 0%,100%{transform:rotate(-5deg) scale(1)} 33%{transform:rotate(5deg) scale(1.1) translateY(-10px)} 66%{transform:rotate(-3deg) scale(1.05) translateY(-5px)} }
-
-.champion-peri     { animation: fairy-champion 0.5s ease-in-out infinite alternate !important; }
-@keyframes fairy-champion { from{transform:translateY(-12px) rotate(-10deg) scale(1.05)} to{transform:translateY(12px) rotate(10deg) scale(1.12)} }
-
-.champion-tavsan   { animation: bunny-champion 0.5s cubic-bezier(0.36,0.07,0.19,0.97) infinite !important; }
-@keyframes bunny-champion { 0%,100%{transform:translateY(0) scaleY(1)} 40%{transform:translateY(-32px) scaleY(1.12)} 80%{transform:translateY(0) scaleX(1.2) scaleY(0.8)} }
-
-.champion-sincap   { animation: squirrel-champion 0.6s ease-in-out infinite !important; }
-@keyframes squirrel-champion { 0%,100%{transform:translateY(0) rotate(-10deg)} 50%{transform:translateY(-22px) rotate(10deg) scale(1.1)} }
-
-.champion-koala    { animation: koala-champion 0.4s ease-in-out infinite !important; }
-@keyframes koala-champion { 0%,100%{transform:rotate(-12deg) scale(1.05)} 50%{transform:rotate(12deg) scale(1.18)} }
-
-.win-overlay-btn {
-  font-family: 'Bebas Neue';
-  font-size: 1.2rem;
-  letter-spacing: 4px;
-  padding: 14px 40px;
-  background: var(--yellow);
-  color: var(--black);
-  border: none;
+.choice-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 2px solid var(--white);
+  background: transparent;
+  color: var(--white);
+  font-size: 30px;
   cursor: pointer;
-  box-shadow: 5px 5px 0 var(--orange);
-  transition: all 0.1s;
-  margin-top: 8px;
 }
-.win-overlay-btn:hover { transform: translate(-2px,-2px); box-shadow: 7px 7px 0 var(--orange); }
-.win-overlay-btn:active { transform: translate(2px,2px); box-shadow: 3px 3px 0 var(--orange); }
+
+.choice-btn:hover { background: var(--white); color: var(--black); }
+
 </style>
 </head>
 <body>
 
-<!-- TICKER -->
-<!-- SES BUTONU -->
-<button id="mute-btn" onclick="toggleAudio()" style="
-  position:fixed;top:4px;right:8px;z-index:200;
-  background:none;border:1px solid #333;color:var(--yellow);
-  font-family:'Bebas Neue';font-size:0.75rem;letter-spacing:1px;
-  padding:3px 8px;cursor:pointer;border-radius:2px;
-  line-height:1.8;
-">🔊 SES</button>
-
-<div class="ticker-wrap">
-  <div class="ticker">
-    <span>ROCKIT!</span><span>✊ TAŞ</span><span>🖐️ KAĞIT</span><span>✌️ MAKAS</span>
-    <span>ROCKIT!</span><span>EN İYİ KAZANIR</span><span>HAZIR MISIN?</span><span>OYNA ŞİMDİ</span>
-    <span>ROCKIT!</span><span>✊ TAŞ</span><span>🖐️ KAĞIT</span><span>✌️ MAKAS</span>
-    <span>ROCKIT!</span><span>EN İYİ KAZANIR</span><span>HAZIR MISIN?</span><span>OYNA ŞİMDİ</span>
-  </div>
+<div id="top-bar">
+    <div class="stat-box">💰 <span id="gold-display">0</span></div>
+    <div id="mute-btn" class="stat-box" onclick="toggleMute()">🔊 SES</div>
 </div>
 
-<!-- SCORE BAR -->
-<div class="score-bar" id="score-bar"></div>
-
-<div class="app">
-  <div class="header">
-    <div class="logo">RockIt!</div>
-    <div class="logo-sub">Çok Oyunculu — Gerçek Zamanlı</div>
-  </div>
-
-  <!-- GİRİŞ -->
-  <div class="screen active" id="screen-join">
-    <div class="panel">
-      <div class="panel-title">Oyuncu Bilgileri</div>
-      <div class="sec-label">İsmin</div>
-      <input type="text" id="input-name" placeholder="ADI GİR..." maxlength="16" />
-      <div class="sec-label">Avatarını Seç</div>
-      <div class="avatar-grid" id="avatar-grid"></div>
-      <div class="divider-line"></div>
-      <div class="err" id="join-error"></div>
-      <button class="btn btn-yellow" onclick="createRoom()" style="margin-bottom:8px">YENİ ODA OLUŞTUR →</button>
-      <button class="btn btn-orange" onclick="startBotGame()" style="margin-bottom:8px">🤖 BOT İLE OYNA →</button>
-      <div style="text-align:center;font-size:0.6rem;color:#555;letter-spacing:3px;margin-bottom:8px">— VEYA MEVCUT ODAYA —</div>
-    </div>
-
-    <div class="panel">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div class="panel-title" style="margin:0">Açık Odalar</div>
-        <button onclick="refreshRooms()" style="background:none;border:1px solid #333;color:#555;font-family:'DM Mono';font-size:0.7rem;padding:4px 10px;cursor:pointer;letter-spacing:1px">↻ YENİLE</button>
-      </div>
-      <div class="rooms-list" id="rooms-list"><div class="room-empty">YÜKLENİYOR...</div></div>
-    </div>
-  </div>
-
-  <!-- BOT ZORLUK SEÇİMİ -->
-  <div class="screen" id="screen-bot">
-    <div class="panel">
-      <div class="panel-title">🤖 Bot Ayarları</div>
-      <div class="sec-label">Bot Zorluğu</div>
-      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
-        <button class="bot-diff-btn selected" onclick="selectBotDiff('kolay',this)">
-          <span style="font-family:'Bebas Neue';font-size:1.1rem;letter-spacing:2px">🟢 KOLAY</span>
-          <span style="font-size:0.6rem;color:#888;display:block;margin-top:2px">Bot rastgele seçer</span>
-        </button>
-        <button class="bot-diff-btn" onclick="selectBotDiff('orta',this)">
-          <span style="font-family:'Bebas Neue';font-size:1.1rem;letter-spacing:2px">🟡 ORTA</span>
-          <span style="font-size:0.6rem;color:#888;display:block;margin-top:2px">Bot senin son seçimini takip eder</span>
-        </button>
-        <button class="bot-diff-btn" onclick="selectBotDiff('zor',this)">
-          <span style="font-family:'Bebas Neue';font-size:1.1rem;letter-spacing:2px">🔴 ZOR</span>
-          <span style="font-size:0.6rem;color:#888;display:block;margin-top:2px">Bot istatistiklerine göre oynar</span>
-        </button>
-      </div>
-      <div class="sec-label">🏆 Kaç puana kazanılır?</div>
-      <div class="score-opts" id="bot-score-opts">
-        <button class="score-opt" onclick="selectBotTarget(3,this)">3</button>
-        <button class="score-opt" onclick="selectBotTarget(5,this)">5</button>
-        <button class="score-opt selected" onclick="selectBotTarget(7,this)">7</button>
-        <button class="score-opt" onclick="selectBotTarget(10,this)">10</button>
-        <button class="score-opt" onclick="selectBotTarget(15,this)">15</button>
-      </div>
-      <button class="btn btn-yellow" onclick="launchBotGame()" style="margin-top:8px">OYNA →</button>
-      <button class="btn btn-ghost" onclick="showScreen('screen-join')">GERİ</button>
-    </div>
-  </div>
-
-  <!-- BOT OYUNU -->
-  <div class="screen" id="screen-bot-pick">
-    <div class="panel">
-      <div class="pick-header">
-        <div class="pick-who" id="bot-pick-who">SENİN SIRAN</div>
-        <div class="pick-sub">Seçimini yap!</div>
-      </div>
-      <div class="game-choices">
-        <button class="game-btn" id="bot-gbtn-tas" onclick="botSubmitChoice('tas')" data-label="TAŞ">✊</button>
-        <button class="game-btn" id="bot-gbtn-kagit" onclick="botSubmitChoice('kagit')" data-label="KAĞIT">🖐️</button>
-        <button class="game-btn" id="bot-gbtn-makas" onclick="botSubmitChoice('makas')" data-label="MAKAS">✌️</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- BOT SONUÇ -->
-  <div class="screen" id="screen-bot-result">
-    <div class="panel">
-      <div class="result-header">
-        <div class="result-headline" id="bot-result-headline">—</div>
-        <div class="result-sub-text" id="bot-result-sub"></div>
-      </div>
-      <div class="result-players" id="bot-result-players"></div>
-      <div class="summary-strip" id="bot-summary-strip"></div>
-      <button class="btn btn-yellow" onclick="botNextRound()" id="btn-bot-next">DEVAM →</button>
-      <button class="btn btn-ghost" onclick="quitBotGame()">ÇIKIŞ</button>
-    </div>
-  </div>
-
-  <!-- BOT SKOR -->
-  <div class="score-bar" id="bot-score-bar" style="display:none">
-    <div class="score-cell">
-      <div class="sc-av" id="bsb-my-av"></div>
-      <div class="sc-nm" id="bsb-my-name"></div>
-      <div class="sc-pt" id="bsb-my-score">0</div>
-    </div>
-    <div class="score-cell">
-      <div class="sc-av" id="bsb-bot-av"></div>
-      <div class="sc-nm">BOT</div>
-      <div class="sc-pt" id="bsb-bot-score">0</div>
-    </div>
-  </div>
-
-  <!-- LOBİ -->
-  <div class="screen" id="screen-lobby">
-    <div class="panel">
-      <div class="sec-label" style="text-align:center">Oda Kodu</div>
-      <div class="lobby-code-big" id="lobby-code">-----</div>
-      <div class="lobby-hint">Bu kodu arkadaşlarına gönder</div>
-
-      <div id="target-select-section">
-        <div class="sec-label">🏆 Kaç puana kazanılır?</div>
-        <div class="score-opts" id="score-opts">
-          <button class="score-opt" onclick="selectTarget(3,this)">3</button>
-          <button class="score-opt" onclick="selectTarget(5,this)">5</button>
-          <button class="score-opt selected" onclick="selectTarget(7,this)">7</button>
-          <button class="score-opt" onclick="selectTarget(10,this)">10</button>
-          <button class="score-opt" onclick="selectTarget(15,this)">15</button>
+<div id="screen-lobby" class="screen active">
+    <h1 style="font-family:'Bebas Neue'; font-size: 80px; color: var(--yellow);">ROCKIT!</h1>
+    <p style="margin-bottom: 30px;">AVATARINI SEÇ VE SAVAŞA BAŞLA</p>
+    
+    <div class="char-grid" id="char-list">
         </div>
-      </div>
 
-      <div class="sec-label">Oyuncular</div>
-      <div class="players-list" id="lobby-players"></div>
-      <button class="btn btn-yellow" id="btn-start" onclick="startGame()" disabled>OYUNU BAŞLAT</button>
-      <button class="btn btn-ghost" onclick="leaveGame()">ODADAN AYRIL</button>
-    </div>
-  </div>
+    <button class="btn btn-yellow" onclick="startBattle()">SAVAŞA GİR →</button>
+</div>
 
-  <!-- OYUN BİTİŞ -->
-  <div class="screen" id="screen-gameover">
-    <div class="panel">
-      <div class="gameover-title">OYUN BİTTİ!</div>
-      <p id="gameover-winner" style="font-family:'Bebas Neue';font-size:1.4rem;letter-spacing:2px;text-align:center;color:var(--white);margin-top:6px;"></p>
-      <div class="podium" id="gameover-podium"></div>
-      <button class="btn btn-yellow" onclick="restartLobby()">YENİ OYUN →</button>
-      <button class="btn btn-ghost" onclick="leaveGame()">ODADAN ÇIK</button>
-    </div>
-  </div>
-
-  <!-- SEÇİM -->
-  <div class="screen" id="screen-pick">
-    <div class="panel">
-      <div class="pick-header">
-        <div class="pick-who" id="pick-who">SENİN SIRAN</div>
-        <div class="pick-sub">Kimse görmeden seç — gizli tut!</div>
-      </div>
-      <div class="game-choices">
-        <button class="game-btn" id="gbtn-tas" onclick="submitChoice('tas')" data-label="TAŞ">✊</button>
-        <button class="game-btn" id="gbtn-kagit" onclick="submitChoice('kagit')" data-label="KAĞIT">🖐️</button>
-        <button class="game-btn" id="gbtn-makas" onclick="submitChoice('makas')" data-label="MAKAS">✌️</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- BEKLEME -->
-  <div class="screen" id="screen-waiting">
-    <div class="panel">
-      <div class="waiting-center">
-        <div class="waiting-title">BEKLENİYOR</div>
-        <div class="waiting-bar">
-          <div class="w-dot"></div><div class="w-dot"></div><div class="w-dot"></div>
+<div id="screen-game" class="screen">
+    <div id="game-arena">
+        <div id="opponent-side" style="text-align: center;">
+            <div id="opp-emoji" style="font-size: 60px;">🤖</div>
+            <p>BOT PROFESSOR</p>
         </div>
-        <div class="waiting-count" id="waiting-count">— / — oyuncu seçti</div>
-      </div>
-      <div id="waiting-players"></div>
-    </div>
-  </div>
 
-  <!-- SONUÇ -->
-  <div class="screen" id="screen-result">
-    <div class="panel">
-      <div class="result-header">
-        <div class="result-headline" id="result-headline">—</div>
-        <div class="result-sub-text" id="result-sub-text"></div>
-      </div>
-      <div class="result-players" id="result-players"></div>
-      <div class="summary-strip" id="summary-strip"></div>
-      <button class="btn btn-yellow" id="btn-play-again" style="display:none;margin-bottom:8px" onclick="playAgain()">YENİ TURU BAŞLAT →</button>
-      <p id="btn-wait-host" style="display:none;font-size:0.65rem;color:#555;letter-spacing:2px;text-align:center;padding:12px;margin-bottom:8px">⏳ HOST YENİ TURU BAŞLATMASI BEKLENİYOR...</p>
-      <button class="btn btn-ghost" onclick="leaveGame()">ODADAN ÇIK</button>
+        <div id="result-text" style="font-family:'Bebas Neue'; font-size: 40px; min-height: 50px;">HAZIR MISIN?</div>
+
+        <div id="player-side" style="text-align: center;">
+            <div id="player-emoji" style="font-size: 60px;">🐼</div>
+            <p id="player-name-tag">PANDA (LVL 1)</p>
+            <div class="choice-container" style="margin-top: 20px;">
+                <button class="choice-btn" onclick="playTurn('ROCK')">✊</button>
+                <button class="choice-btn" onclick="playTurn('PAPER')">✋</button>
+                <button class="choice-btn" onclick="playTurn('SCISSORS')">✌️</button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
-<!-- WIN OVERLAY -->
-<div id="win-overlay">
-  <div class="win-overlay-title">🏆 ŞAMPİYON!</div>
-  <div class="win-overlay-name" id="win-overlay-name"></div>
-  <div class="win-avatar-stage" id="win-avatar-stage"></div>
-  <button class="win-overlay-btn" onclick="closeWinOverlay()">DEVAM ET →</button>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-app-compat.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/firebase@10.12.0/firebase-database-compat.min.js"></script>
 <script>
-const firebaseConfig = {
-  apiKey: "AIzaSyDqWbNJ4FKm2nmnGqfSjuTnU7ZTSAU5LQE",
-  authDomain: "rockit-83d39.firebaseapp.com",
-  databaseURL: "https://rockit-83d39-default-rtdb.firebaseio.com",
-  projectId: "rockit-83d39",
-  storageBucket: "rockit-83d39.firebasestorage.app",
-  messagingSenderId: "674427973994",
-  appId: "1:674427973994:web:a49a075ac2124dac0ab513"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-const MAX_PLAYERS = 7;
-
-// SVG avatarlar - profesyonel oyun tasarımı seviyesinde
-const AVATAR_SVGS = {
-  panda: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="32" cy="36" r="22" fill="#f0ede4" stroke="#111" stroke-width="2"/>
-    <circle cx="16" cy="20" r="10" fill="#111"/>
-    <circle cx="48" cy="20" r="10" fill="#111"/>
-    <circle cx="22" cy="32" r="7" fill="#111"/>
-    <circle cx="42" cy="32" r="7" fill="#111"/>
-    <circle cx="23" cy="31" r="3" fill="#fff"/>
-    <circle cx="43" cy="31" r="3" fill="#fff"/>
-    <circle cx="24" cy="31" r="1.5" fill="#111"/>
-    <circle cx="44" cy="31" r="1.5" fill="#111"/>
-    <ellipse cx="32" cy="42" rx="6" ry="4" fill="#f5a0a0"/>
-    <path d="M28 46 Q32 50 36 46" stroke="#111" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-    <line x1="20" y1="44" x2="10" y2="48" stroke="#888" stroke-width="1.2"/>
-    <line x1="44" y1="44" x2="54" y2="48" stroke="#888" stroke-width="1.2"/>
-  </svg>`,
-
-  unicorn: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="32" cy="34" r="20" fill="#ffe8f5"/>
-    <ellipse cx="32" cy="34" rx="20" ry="20" fill="#ffe8f5" stroke="#d4a0c0" stroke-width="1.5"/>
-    <polygon points="32,6 29,20 35,20" fill="url(#grad-horngrad)"/>
-    <defs><linearGradient id="grad-horngrad" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffe040"/><stop offset="100%" stop-color="#ff8c00"/></linearGradient></defs>
-    <path d="M14 16 Q8 20 12 28 Q6 24 14 16Z" fill="#ff9de2"/>
-    <path d="M50 16 Q56 20 52 28 Q58 24 50 16Z" fill="#9de2ff"/>
-    <path d="M26 26 Q28 20 32 22 Q36 20 38 26" fill="#c8a0e0" stroke="none"/>
-    <circle cx="24" cy="30" r="4" fill="#fff"/>
-    <circle cx="40" cy="30" r="4" fill="#fff"/>
-    <circle cx="25" cy="30" r="2" fill="#5b3f8a"/>
-    <circle cx="41" cy="30" r="2" fill="#5b3f8a"/>
-    <circle cx="25.8" cy="29.2" r="0.8" fill="#fff"/>
-    <circle cx="41.8" cy="29.2" r="0.8" fill="#fff"/>
-    <ellipse cx="32" cy="39" rx="4" ry="2.5" fill="#ffb0d8"/>
-    <path d="M29 42 Q32 46 35 42" stroke="#c06090" stroke-width="1.5" fill="none"/>
-  </svg>`,
-
-  koala: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="14" cy="26" rx="10" ry="11" fill="#8a8a8a" stroke="#555" stroke-width="1.5"/>
-    <ellipse cx="50" cy="26" rx="10" ry="11" fill="#8a8a8a" stroke="#555" stroke-width="1.5"/>
-    <ellipse cx="14" cy="25" rx="7" ry="8" fill="#b8b8b8"/>
-    <ellipse cx="50" cy="25" rx="7" ry="8" fill="#b8b8b8"/>
-    <circle cx="32" cy="36" r="20" fill="#9a9a9a" stroke="#555" stroke-width="1.5"/>
-    <ellipse cx="32" cy="38" rx="13" ry="10" fill="#b8b8b8"/>
-    <ellipse cx="32" cy="33" rx="8" ry="6" fill="#333" stroke="#111" stroke-width="1"/>
-    <circle cx="26" cy="31" r="4" fill="#fff"/>
-    <circle cx="38" cy="31" r="4" fill="#fff"/>
-    <circle cx="27" cy="31" r="2" fill="#111"/>
-    <circle cx="39" cy="31" r="2" fill="#111"/>
-    <circle cx="27.8" cy="30.3" r="0.8" fill="#fff"/>
-    <circle cx="39.8" cy="30.3" r="0.8" fill="#fff"/>
-    <path d="M28 40 Q32 44 36 40" stroke="#555" stroke-width="1.5" fill="none"/>
-  </svg>`,
-
-  sincap: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="50" cy="18" rx="12" ry="18" fill="#c47a30" stroke="#7a4a10" stroke-width="1.5" transform="rotate(-20 50 18)"/>
-    <ellipse cx="49" cy="17" rx="8" ry="13" fill="#e8a860" transform="rotate(-20 50 18)"/>
-    <ellipse cx="18" cy="16" rx="5" ry="8" fill="#c47a30" stroke="#7a4a10" stroke-width="1"/>
-    <ellipse cx="18" cy="15" rx="3" ry="5" fill="#f0c080"/>
-    <circle cx="30" cy="36" r="20" fill="#c47a30" stroke="#7a4a10" stroke-width="1.5"/>
-    <ellipse cx="30" cy="40" rx="12" ry="8" fill="#e8a860"/>
-    <circle cx="24" cy="30" r="4" fill="#fff"/>
-    <circle cx="36" cy="30" r="4" fill="#fff"/>
-    <circle cx="25" cy="30" r="2" fill="#2a1500"/>
-    <circle cx="37" cy="30" r="2" fill="#2a1500"/>
-    <circle cx="25.8" cy="29.3" r="0.8" fill="#fff"/>
-    <circle cx="37.8" cy="29.3" r="0.8" fill="#fff"/>
-    <ellipse cx="30" cy="36" rx="5" ry="3.5" fill="#e06070"/>
-    <path d="M27 40 Q30 44 33 40" stroke="#7a4a10" stroke-width="1.5" fill="none"/>
-    <line x1="18" y1="38" x2="8" y2="36" stroke="#888" stroke-width="1"/>
-    <line x1="18" y1="40" x2="8" y2="40" stroke="#888" stroke-width="1"/>
-  </svg>`,
-
-  sovalye: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="grad-armorgrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#c8d8e8"/><stop offset="100%" stop-color="#6888a8"/>
-      </linearGradient>
-      <linearGradient id="grad-helmetgrad" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#a0b8d0"/><stop offset="100%" stop-color="#4868a0"/>
-      </linearGradient>
-    </defs>
-    <rect x="18" y="38" width="28" height="20" rx="2" fill="url(#grad-armorgrad)" stroke="#446" stroke-width="1.5"/>
-    <rect x="22" y="40" width="8" height="16" rx="1" fill="#5878a8" opacity="0.4"/>
-    <rect x="34" y="40" width="8" height="16" rx="1" fill="#5878a8" opacity="0.4"/>
-    <path d="M14 38 Q18 30 32 28 Q46 30 50 38Z" fill="url(#grad-armorgrad)" stroke="#446" stroke-width="1.5"/>
-    <ellipse cx="32" cy="26" rx="14" ry="16" fill="url(#grad-helmetgrad)" stroke="#224" stroke-width="2"/>
-    <rect x="24" y="24" width="16" height="6" rx="1" fill="#1a2a3a" opacity="0.8"/>
-    <rect x="26" y="25" width="12" height="4" rx="0.5" fill="#0a1a2a" opacity="0.6"/>
-    <line x1="24" y1="27" x2="40" y2="27" stroke="#6888c8" stroke-width="0.8" opacity="0.5"/>
-    <path d="M20 14 Q26 8 32 12 Q38 8 44 14 Q46 20 44 24 Q38 22 32 22 Q26 22 20 24 Q18 20 20 14Z" fill="url(#grad-helmetgrad)" stroke="#224" stroke-width="1.5"/>
-    <polygon points="30,4 32,14 34,4" fill="#e8d040" stroke="#a89010" stroke-width="1"/>
-    <polygon points="32,4 31,9 33,9" fill="#fff8a0"/>
-    <rect x="46" y="20" width="12" height="32" rx="1" fill="#8898a8" stroke="#446" stroke-width="1"/>
-    <rect x="44" y="18" width="16" height="4" rx="1" fill="#6878a0" stroke="#446" stroke-width="1"/>
-    <polygon points="52,54 48,58 56,58" fill="#6878a0" stroke="#446" stroke-width="1"/>
-    <rect x="8" y="30" width="10" height="18" rx="1" fill="#7888a0" stroke="#446" stroke-width="1"/>
-    <rect x="4" y="28" width="18" height="4" rx="8" fill="#6878a0" stroke="#446" stroke-width="1"/>
-  </svg>`,
-
-  ejder: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="grad-dragongrad" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#2a8a2a"/><stop offset="100%" stop-color="#0a4a0a"/>
-      </linearGradient>
-    </defs>
-    <ellipse cx="42" cy="12" rx="8" ry="10" fill="#1a6a1a" stroke="#0a3a0a" stroke-width="1.5" transform="rotate(30 42 12)"/>
-    <ellipse cx="22" cy="12" rx="8" ry="10" fill="#1a6a1a" stroke="#0a3a0a" stroke-width="1.5" transform="rotate(-30 22 12)"/>
-    <path d="M10 54 Q8 40 16 32 Q20 26 28 24 Q24 32 22 44 Q18 50 10 54Z" fill="#1a6a1a" stroke="#0a3a0a" stroke-width="1.5"/>
-    <path d="M54 54 Q56 40 48 32 Q44 26 36 24 Q40 32 42 44 Q46 50 54 54Z" fill="#1a6a1a" stroke="#0a3a0a" stroke-width="1.5"/>
-    <ellipse cx="32" cy="36" rx="20" ry="18" fill="url(#grad-dragongrad)" stroke="#0a3a0a" stroke-width="2"/>
-    <ellipse cx="32" cy="40" rx="14" ry="10" fill="#0a5a18" opacity="0.5"/>
-    <path d="M24 36 L20 28 L26 34Z M40 36 L44 28 L38 34Z M32 32 L32 22 L36 30Z" fill="#3aaa3a" opacity="0.8"/>
-    <circle cx="24" cy="30" r="5" fill="#e8e800" stroke="#808000" stroke-width="1"/>
-    <circle cx="40" cy="30" r="5" fill="#e8e800" stroke="#808000" stroke-width="1"/>
-    <ellipse cx="24" cy="30" rx="2" ry="3.5" fill="#0a0a0a"/>
-    <ellipse cx="40" cy="30" rx="2" ry="3.5" fill="#0a0a0a"/>
-    <circle cx="24.6" cy="28.5" r="1" fill="#fff"/>
-    <circle cx="40.6" cy="28.5" r="1" fill="#fff"/>
-    <path d="M22 42 Q27 38 32 40 Q37 38 42 42 Q38 48 32 48 Q26 48 22 42Z" fill="#0a5a10" stroke="#0a3a0a" stroke-width="1"/>
-    <path d="M24 44 L22 50 M28 45 L27 52 M32 45 L32 52 M36 45 L37 52 M40 44 L42 50" stroke="#3aaa3a" stroke-width="1.2"/>
-    <polygon points="20,8 24,16 16,16" fill="#e83020" opacity="0.9"/>
-    <polygon points="32,6 36,16 28,16" fill="#e86020" opacity="0.9"/>
-    <polygon points="44,8 48,16 40,16" fill="#e83020" opacity="0.9"/>
-  </svg>`,
-
-  samuray: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="grad-samurai-armor" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#c83030"/><stop offset="100%" stop-color="#6a0808"/>
-      </linearGradient>
-      <linearGradient id="grad-samurai-helmet" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#1a1a1a"/><stop offset="100%" stop-color="#3a0808"/>
-      </linearGradient>
-    </defs>
-    <rect x="16" y="38" width="32" height="20" rx="2" fill="url(#grad-samurai-armor)" stroke="#400" stroke-width="1.5"/>
-    <line x1="22" y1="38" x2="22" y2="58" stroke="#800" stroke-width="1"/>
-    <line x1="32" y1="38" x2="32" y2="58" stroke="#800" stroke-width="1"/>
-    <line x1="42" y1="38" x2="42" y2="58" stroke="#800" stroke-width="1"/>
-    <path d="M12 38 Q16 30 32 28 Q48 30 52 38Z" fill="url(#grad-samurai-armor)" stroke="#400" stroke-width="1.5"/>
-    <ellipse cx="32" cy="24" rx="14" ry="16" fill="#c8a878" stroke="#806040" stroke-width="1.5"/>
-    <ellipse cx="32" cy="22" rx="14" ry="13" fill="url(#grad-samurai-helmet)" stroke="#111" stroke-width="2"/>
-    <path d="M18 20 Q20 10 32 8 Q44 10 46 20 Q44 24 32 24 Q20 24 18 20Z" fill="url(#grad-samurai-helmet)" stroke="#111" stroke-width="2"/>
-    <path d="M14 16 Q18 10 22 14" stroke="#c82020" stroke-width="2" fill="none"/>
-    <path d="M50 16 Q46 10 42 14" stroke="#c82020" stroke-width="2" fill="none"/>
-    <path d="M20 16 Q32 10 44 16" fill="#c82020" stroke="#800" stroke-width="1"/>
-    <rect x="23" y="23" width="18" height="5" rx="0.5" fill="#0a0a0a"/>
-    <line x1="27" y1="24" x2="37" y2="24" stroke="#c83030" stroke-width="1" opacity="0.8"/>
-    <line x1="26" y1="26" x2="38" y2="26" stroke="#c83030" stroke-width="0.8" opacity="0.5"/>
-    <circle cx="26" cy="30" r="3" fill="#c8a878"/>
-    <circle cx="38" cy="30" r="3" fill="#c8a878"/>
-    <circle cx="26" cy="30" r="1.5" fill="#1a1a0a"/>
-    <circle cx="38" cy="30" r="1.5" fill="#1a1a0a"/>
-    <rect x="54" y="10" width="5" height="40" rx="1" fill="#c0b060" stroke="#806020" stroke-width="1"/>
-    <rect x="52" y="8" width="9" height="4" rx="1" fill="#a09050" stroke="#806020" stroke-width="1"/>
-    <rect x="54" y="46" width="5" height="8" rx="1" fill="#808080"/>
-    <rect x="4" y="26" width="16" height="5" rx="8" fill="#c83030" stroke="#400" stroke-width="1"/>
-    <rect x="5" y="27" width="14" height="3" rx="6" fill="#ff6060" opacity="0.3"/>
-  </svg>`,
-
-  harry: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="grad-robe" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#2a1060"/><stop offset="100%" stop-color="#0a0820"/>
-      </linearGradient>
-      <radialGradient id="grad-magic" cx="50%" cy="50%" r="50%">
-        <stop offset="0%" stop-color="#c060ff" stop-opacity="0.9"/>
-        <stop offset="100%" stop-color="#6010c0" stop-opacity="0"/>
-      </radialGradient>
-    </defs>
-    <!-- Cüppe -->
-    <path d="M10 58 Q12 44 18 38 Q24 34 32 34 Q40 34 46 38 Q52 44 54 58Z" fill="url(#grad-robe)" stroke="#5020a0" stroke-width="1.5"/>
-    <!-- Cüppe yıldız süslemeleri -->
-    <circle cx="22" cy="46" r="1.2" fill="#a060ff" opacity="0.8"/>
-    <circle cx="42" cy="48" r="1" fill="#ff80ff" opacity="0.7"/>
-    <circle cx="32" cy="52" r="1.5" fill="#80c0ff" opacity="0.6"/>
-    <circle cx="18" cy="54" r="0.8" fill="#ffd040" opacity="0.9"/>
-    <circle cx="46" cy="55" r="1" fill="#ffd040" opacity="0.8"/>
-    <!-- Kol ve değnek -->
-    <path d="M48 38 Q54 36 58 30" stroke="#f5d090" stroke-width="3" fill="none" stroke-linecap="round"/>
-    <ellipse cx="59" cy="28" rx="4" ry="4" fill="url(#grad-magic)" opacity="0.9"/>
-    <circle cx="59" cy="28" r="2" fill="#e0a0ff"/>
-    <line x1="56" y1="25" x2="62" y2="31" stroke="#ffd040" stroke-width="0.8" opacity="0.7"/>
-    <line x1="62" y1="25" x2="56" y2="31" stroke="#ffd040" stroke-width="0.8" opacity="0.7"/>
-    <!-- Gövde üst -->
-    <path d="M20 38 Q24 30 32 28 Q40 30 44 38" fill="#1a0840" stroke="#5020a0" stroke-width="1"/>
-    <!-- Büyük sivri şapka -->
-    <polygon points="32,2 20,26 44,26" fill="#1a0840" stroke="#5020a0" stroke-width="1.5"/>
-    <ellipse cx="32" cy="26" rx="12" ry="3" fill="#2a1060" stroke="#5020a0" stroke-width="1"/>
-    <!-- Şapka yıldız süsü -->
-    <polygon points="32,8 33.5,12 37,12 34,14 35,18 32,16 29,18 30,14 27,12 30.5,12" fill="#ffd040" opacity="0.9"/>
-    <!-- Yüz -->
-    <ellipse cx="32" cy="32" rx="9" ry="10" fill="#f5d090" stroke="#c09050" stroke-width="1"/>
-    <!-- Uzun sakal -->
-    <path d="M26 38 Q28 44 32 46 Q36 44 38 38" fill="#f0f0f0" stroke="#ccc" stroke-width="0.8"/>
-    <path d="M28 40 Q30 48 32 50 Q34 48 36 40" fill="#f0f0f0" stroke="#ccc" stroke-width="0.5"/>
-    <!-- Gözler -->
-    <circle cx="28" cy="30" r="3" fill="#fff"/>
-    <circle cx="36" cy="30" r="3" fill="#fff"/>
-    <circle cx="28.8" cy="30" r="1.8" fill="#3a1080"/>
-    <circle cx="36.8" cy="30" r="1.8" fill="#3a1080"/>
-    <circle cx="29.4" cy="29.3" r="0.7" fill="#fff"/>
-    <circle cx="37.4" cy="29.3" r="0.7" fill="#fff"/>
-    <!-- Kaşlar (meraklı) -->
-    <path d="M26 27 Q28 25.5 30 27" stroke="#806030" stroke-width="1" fill="none"/>
-    <path d="M34 27 Q36 25.5 38 27" stroke="#806030" stroke-width="1" fill="none"/>
-    <!-- Gülümse -->
-    <path d="M29 35 Q32 38 35 35" stroke="#c08040" stroke-width="1.2" fill="none"/>
-    <!-- Sihir parıltıları -->
-    <circle cx="14" cy="40" r="1.5" fill="#c060ff" opacity="0.7"/>
-    <circle cx="10" cy="46" r="1" fill="#80ffff" opacity="0.6"/>
-    <circle cx="50" cy="44" r="1.2" fill="#ffd040" opacity="0.8"/>
-  </svg>`,
-
-  peri: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <linearGradient id="grad-wing1" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#e8f8ff" stop-opacity="0.95"/>
-        <stop offset="100%" stop-color="#a0d8ff" stop-opacity="0.5"/>
-      </linearGradient>
-      <linearGradient id="grad-wing2" x1="1" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#fff0f8" stop-opacity="0.95"/>
-        <stop offset="100%" stop-color="#ffa0d0" stop-opacity="0.5"/>
-      </linearGradient>
-      <linearGradient id="grad-dress" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0%" stop-color="#e060c0"/><stop offset="100%" stop-color="#8020a0"/>
-      </linearGradient>
-    </defs>
-    <!-- Üst kanatlar (büyük, kelebek şekli) -->
-    <path d="M32 28 Q18 16 6 22 Q4 30 12 34 Q20 38 32 32Z" fill="url(#grad-wing1)" stroke="#80c0ff" stroke-width="1" opacity="0.9"/>
-    <path d="M32 28 Q46 16 58 22 Q60 30 52 34 Q44 38 32 32Z" fill="url(#grad-wing2)" stroke="#ffb0e0" stroke-width="1" opacity="0.9"/>
-    <!-- Alt kanatlar (küçük) -->
-    <path d="M32 36 Q20 32 10 40 Q14 48 22 46 Q28 44 32 40Z" fill="url(#grad-wing1)" stroke="#80c0ff" stroke-width="0.8" opacity="0.75"/>
-    <path d="M32 36 Q44 32 54 40 Q50 48 42 46 Q36 44 32 40Z" fill="url(#grad-wing2)" stroke="#ffb0e0" stroke-width="0.8" opacity="0.75"/>
-    <!-- Kanat damarları -->
-    <path d="M32 30 Q22 22 10 24" stroke="#60a0e0" stroke-width="0.6" fill="none" opacity="0.5"/>
-    <path d="M32 30 Q42 22 54 24" stroke="#e060a0" stroke-width="0.6" fill="none" opacity="0.5"/>
-    <!-- Elbise -->
-    <path d="M24 44 Q22 54 26 60 L32 60 L38 60 Q42 54 40 44 Q36 40 32 38 Q28 40 24 44Z" fill="url(#grad-dress)" stroke="#6010a0" stroke-width="1.2"/>
-    <!-- Elbise fırfır -->
-    <path d="M24 44 Q26 46 28 44 Q30 46 32 44 Q34 46 36 44 Q38 46 40 44" fill="none" stroke="#ff80e0" stroke-width="1"/>
-    <!-- Gövde üst -->
-    <ellipse cx="32" cy="38" rx="8" ry="5" fill="#e050b0" stroke="#6010a0" stroke-width="1"/>
-    <!-- Sihirli değnek - sağda -->
-    <line x1="40" y1="36" x2="52" y2="20" stroke="#ffd040" stroke-width="2" stroke-linecap="round"/>
-    <polygon points="52,20 50,14 56,16 54,22 58,18" fill="#ffd040" stroke="#c0a000" stroke-width="0.8"/>
-    <!-- Değnek ucu parıltı -->
-    <circle cx="54" cy="17" r="3" fill="#ffffa0" opacity="0.8"/>
-    <line x1="54" y1="12" x2="54" y2="22" stroke="#ffd040" stroke-width="0.8" opacity="0.6"/>
-    <line x1="49" y1="17" x2="59" y2="17" stroke="#ffd040" stroke-width="0.8" opacity="0.6"/>
-    <!-- Yüz -->
-    <circle cx="32" cy="26" r="10" fill="#fde8c0" stroke="#c09060" stroke-width="1.2"/>
-    <!-- Saç - uzun pembe -->
-    <path d="M22 22 Q20 14 28 10 Q32 8 36 10 Q44 14 42 22" fill="#ff80c0" stroke="#d04080" stroke-width="1"/>
-    <path d="M22 22 Q18 28 20 36" fill="#ff80c0" stroke="#d04080" stroke-width="1"/>
-    <path d="M42 22 Q46 28 44 36" fill="#ff80c0" stroke="#d04080" stroke-width="1"/>
-    <!-- Taç -->
-    <path d="M24 18 L26 14 L29 18 L32 12 L35 18 L38 14 L40 18" fill="#ffd040" stroke="#c0a000" stroke-width="1"/>
-    <!-- Gözler (iri, çekik) -->
-    <ellipse cx="28" cy="26" rx="4" ry="3.5" fill="#fff"/>
-    <ellipse cx="36" cy="26" rx="4" ry="3.5" fill="#fff"/>
-    <ellipse cx="28.5" cy="26.5" rx="2.5" ry="2.5" fill="#5020a0"/>
-    <ellipse cx="36.5" cy="26.5" rx="2.5" ry="2.5" fill="#5020a0"/>
-    <circle cx="29.3" cy="25.5" r="1" fill="#fff"/>
-    <circle cx="37.3" cy="25.5" r="1" fill="#fff"/>
-    <!-- Uzun kirpikler -->
-    <line x1="25" y1="23" x2="24" y2="21" stroke="#5020a0" stroke-width="0.8"/>
-    <line x1="28" y1="22.5" x2="27.5" y2="20.5" stroke="#5020a0" stroke-width="0.8"/>
-    <line x1="32" y1="23" x2="32" y2="21" stroke="#5020a0" stroke-width="0.8"/>
-    <!-- Yanak pembe -->
-    <ellipse cx="24" cy="30" rx="3" ry="2" fill="#ff9090" opacity="0.5"/>
-    <ellipse cx="40" cy="30" rx="3" ry="2" fill="#ff9090" opacity="0.5"/>
-    <!-- Gülümseme -->
-    <path d="M28 32 Q32 35 36 32" stroke="#c06090" stroke-width="1.2" fill="none"/>
-    <!-- Peri tozu parıltıları -->
-    <circle cx="8" cy="36" r="1.5" fill="#ffd040" opacity="0.8"/>
-    <circle cx="56" cy="32" r="1.2" fill="#ff80ff" opacity="0.7"/>
-    <circle cx="14" cy="48" r="1" fill="#80ffff" opacity="0.6"/>
-  </svg>`,
-
-  tavsan: `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
-    <ellipse cx="22" cy="12" rx="6" ry="16" fill="#e8ddd0" stroke="#a09080" stroke-width="1.5"/>
-    <ellipse cx="42" cy="12" rx="6" ry="16" fill="#e8ddd0" stroke="#a09080" stroke-width="1.5"/>
-    <ellipse cx="22" cy="12" rx="3" ry="12" fill="#f0a0a8"/>
-    <ellipse cx="42" cy="12" rx="3" ry="12" fill="#f0a0a8"/>
-    <circle cx="32" cy="36" r="20" fill="#e8ddd0" stroke="#a09080" stroke-width="1.5"/>
-    <ellipse cx="32" cy="40" rx="13" ry="9" fill="#f5f0eb"/>
-    <circle cx="24" cy="30" r="4.5" fill="#fff"/>
-    <circle cx="40" cy="30" r="4.5" fill="#fff"/>
-    <circle cx="25" cy="30" r="2.5" fill="#ff4488"/>
-    <circle cx="41" cy="30" r="2.5" fill="#ff4488"/>
-    <circle cx="25.8" cy="29.2" r="1" fill="#fff"/>
-    <circle cx="41.8" cy="29.2" r="1" fill="#fff"/>
-    <ellipse cx="32" cy="38" rx="5" ry="3.5" fill="#f0a0a8"/>
-    <path d="M29 42 Q32 46 35 42" stroke="#a09080" stroke-width="1.5" fill="none"/>
-    <line x1="20" y1="40" x2="8" y2="38" stroke="#c0b0a0" stroke-width="1.2"/>
-    <line x1="20" y1="42" x2="8" y2="43" stroke="#c0b0a0" stroke-width="1.2"/>
-    <line x1="44" y1="40" x2="56" y2="38" stroke="#c0b0a0" stroke-width="1.2"/>
-    <line x1="44" y1="42" x2="56" y2="43" stroke="#c0b0a0" stroke-width="1.2"/>
-  </svg>`
-};
-
-const AVATARS = [
-  { id: 'panda',    label: 'Panda' },
-  { id: 'unicorn',  label: 'Unicorn' },
-  { id: 'koala',    label: 'Koala' },
-  { id: 'sincap',   label: 'Sincap' },
-  { id: 'sovalye',  label: 'Şövalye' },
-  { id: 'ejder',    label: 'Ejderha' },
-  { id: 'samuray',  label: 'Samuray' },
-  { id: 'harry',    label: 'Büyücü' },
-  { id: 'peri',     label: 'Peri' },
-  { id: 'tavsan',   label: 'Tavşan' },
+// --- GAME DATA & STATE ---
+const CHARACTERS = [
+    { id: 'PANDA', name: 'Panda', emoji: '🐼', price: 0, type: 'Balanced' },
+    { id: 'SAMURAI', name: 'Samurai', emoji: '🥷', price: 500, type: 'Speed' },
+    { id: 'ROBOT', name: 'Robot', emoji: '🤖', price: 1250, type: 'Intel' },
+    { id: 'PHANTOM', name: 'Phantom', emoji: '👻', price: 2500, type: 'Stealth' },
+    { id: 'DRAGON', name: 'Dragon', emoji: '🐲', price: 5000, type: 'Power' }
 ];
 
-const GAME_CHOICES = {
-  tas:   { emoji: '✊', label: 'Taş' },
-  kagit: { emoji: '🖐️', label: 'Kağıt' },
-  makas: { emoji: '✌️', label: 'Makas' },
+let gameState = {
+    gold: parseInt(localStorage.getItem('rockit_gold')) || 0,
+    unlocked: JSON.parse(localStorage.getItem('rockit_unlocked')) || ['PANDA'],
+    levels: JSON.parse(localStorage.getItem('rockit_levels')) || { PANDA:1, SAMURAI:1, ROBOT:1, PHANTOM:1, DRAGON:1 },
+    xp: JSON.parse(localStorage.getItem('rockit_xp')) || { PANDA:0, SAMURAI:0, ROBOT:0, PHANTOM:0, DRAGON:0 },
+    selectedChar: 'PANDA'
 };
 
-const BEATS = { tas: 'makas', makas: 'kagit', kagit: 'tas' };
+// --- CORE FUNCTIONS ---
+function initLobby() {
+    const list = document.getElementById('char-list');
+    list.innerHTML = '';
+    document.getElementById('gold-display').textContent = gameState.gold;
 
-let myId = null, myName = '', myAvatar = null;
-let roomCode = '', roomRef = null, roomListener = null;
-let myChosenId = null;
-let targetScore = 7;
-let isResolvingRound = false;
-let lastSeenRound = 0;
+    CHARACTERS.forEach(char => {
+        const isUnlocked = gameState.unlocked.includes(char.id);
+        const card = document.createElement('div');
+        card.className = `char-card ${!isUnlocked ? 'locked' : ''} ${gameState.selectedChar === char.id ? 'selected' : ''}`;
+        
+        card.innerHTML = `
+            <span class="char-emoji">${char.emoji}</span>
+            <span class="char-name">${char.name}</span>
+            <span class="char-level">LVL ${gameState.levels[char.id]}</span>
+            ${!isUnlocked ? `<span class="char-price">💰 ${char.price}</span>` : ''}
+        `;
 
-function getAvatarSvg(id, size='32px') {
-  const svg = AVATAR_SVGS[id];
-  if (!svg) return `<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg"><circle cx="32" cy="32" r="28" fill="#333"/></svg>`;
-  return `<span style="display:inline-flex;width:${size};height:${size};vertical-align:middle">${svg}</span>`;
+        card.onclick = () => selectCharacter(char);
+        list.appendChild(card);
+    });
 }
 
-// Legacy compatibility
-function getAvatarEmoji(id) {
-  return getAvatarSvg(id, '28px');
+function selectCharacter(char) {
+    if (gameState.unlocked.includes(char.id)) {
+        gameState.selectedChar = char.id;
+    } else {
+        if (gameState.gold >= char.price) {
+            if (confirm(`${char.name} karakterini ${char.price} altına açmak istiyor musun?`)) {
+                gameState.gold -= char.price;
+                gameState.unlocked.push(char.id);
+                gameState.selectedChar = char.id;
+            }
+        } else {
+            alert('Yeterli altının yok! Savaşarak kazanabilirsin.');
+        }
+    }
+    saveData();
+    initLobby();
 }
 
-// Avatar grid - getAvatarSvg tanımlandıktan sonra çalıştır
-const avatarGrid = document.getElementById('avatar-grid');
-AVATARS.forEach(a => {
-  const btn = document.createElement('button');
-  btn.className = 'avatar-btn';
-  btn.innerHTML = getAvatarSvg(a.id, '38px');
-  btn.title = a.label;
-  btn.onclick = () => {
-    document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    myAvatar = a.id;
-    Audio.playClick();
-  };
-  avatarGrid.appendChild(btn);
-});
+function playTurn(playerChoice) {
+    const choices = ['ROCK', 'PAPER', 'SCISSORS'];
+    const botChoice = choices[Math.floor(Math.random() * 3)];
+    const emojis = { ROCK: '✊', PAPER: '✋', SCISSORS: '✌️' };
+    
+    document.getElementById('result-text').textContent = `${emojis[playerChoice]} VS ${emojis[botChoice]}`;
+
+    if (playerChoice === botChoice) {
+        handleResult('DRAW');
+    } else if (
+        (playerChoice === 'ROCK' && botChoice === 'SCISSORS') ||
+        (playerChoice === 'PAPER' && botChoice === 'ROCK') ||
+        (playerChoice === 'SCISSORS' && botChoice === 'PAPER')
+    ) {
+        handleResult('WIN');
+    } else {
+        handleResult('LOSE');
+    }
+}
+
+function handleResult(res) {
+    const status = document.getElementById('result-text');
+    if (res === 'WIN') {
+        status.style.color = 'var(--green)';
+        status.textContent = "TEBRİKLER! +15 ALTIN";
+        gameState.gold += 15;
+        gainXP(gameState.selectedChar, 25);
+    } else if (res === 'LOSE') {
+        status.style.color = 'var(--orange)';
+        status.textContent = "KAYBETTİN!";
+        gainXP(gameState.selectedChar, 5);
+    } else {
+        status.style.color = 'var(--white)';
+        status.textContent = "BERABERE!";
+    }
+    saveData();
+    document.getElementById('gold-display').textContent = gameState.gold;
+    
+    setTimeout(() => {
+        if(confirm("Tekrar oynamak ister misin yoksa lobiye mi döneceksin?")) {
+            status.textContent = "HAZIR MISIN?";
+        } else {
+            showScreen('screen-lobby');
+        }
+    }, 1500);
+}
+
+function gainXP(charId, amount) {
+    gameState.xp[charId] += amount;
+    const nextLevelAt = gameState.levels[charId] * 100;
+    if (gameState.xp[charId] >= nextLevelAt) {
+        gameState.levels[charId]++;
+        gameState.xp[charId] = 0;
+        alert(`LEVEL UP! ${charId} artık Level ${gameState.levels[charId]}`);
+    }
+}
+
+function saveData() {
+    localStorage.setItem('rockit_gold', gameState.gold);
+    localStorage.setItem('rockit_unlocked', JSON.stringify(gameState.unlocked));
+    localStorage.setItem('rockit_levels', JSON.stringify(gameState.levels));
+    localStorage.setItem('rockit_xp', JSON.stringify(gameState.xp));
+}
 
 function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  // Lobi/join ekranında arka plan müziği
-  if (id === 'screen-join' || id === 'screen-lobby') Audio.playBg();
-  else if (id === 'screen-pick' || id === 'screen-bot-pick') Audio.stopBg();
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    if(id === 'screen-lobby') initLobby();
 }
 
-const ROOM_NAMES = [
-  'KIZIL-EJDER','ALTIN-PANDA','GECE-UNICORN','MAVI-KOALA','NEON-SINCAP',
-  'YILDIZ-PERI','LAZER-TAVSAN','KRISTAL-KURT','PLAZMA-ASLAN','ROKET-KAPLAN',
-  'GIZEMLI-BALIK','KOZMIK-KARTAL','ELEKTRIK-AYISI','FIRTINA-TIMSAH','BRONZ-MAYMUN',
-  'DEMIR-PENGUEN','ALEV-SAMPIYONU','GUMUS-SAHIN','PAMUK-ZOMBI','PURPURA-NINJA',
-  'SICAK-METEOR','DONMUS-VOLKAN','UZAY-KORSAN','SEKER-CANAVAR','TURBO-SAMURAY',
-  'TITAN-GOBLIN','ELMAS-VAMPIR','KARANLIK-ELF','PARLAK-TROLL','SISLI-ROBOT',
-  'ATES-CADISI','BUZLU-SEHZADE','KARTAL-YUVASI','ASLAN-KAPISI','EJDER-ADASI',
-  'YILDIZ-KUYUSU','GECE-KALESI','NEON-SEHRI','LAZER-TEPESI','KRISTAL-OVASIN',
-  'PLAZMA-KOYU','ROKET-VADISI','GIZEMLI-ORMAN','KOZMIK-GOLET','ELEKTRIK-BAHCE',
-  'FIRTINA-LIMANI','BRONZ-KULE','DEMIR-KOPRU','ALEV-SARAY','GUMUS-KAYA',
-  'PAMUK-CEVRE','PURPURA-MEYDAN','SICAK-SAHIL','DONMUS-ZIT','UZAY-MERKEZ',
-  'SEKER-PARK','TURBO-ALAN','TITAN-BARIS','ELMAS-HALI','KARANLIK-YOLU',
-  'PARLAK-KOY','SISLI-DERE','ATES-GEZI','BUZLU-ROTA','KARTAL-INISI',
-  'ASLAN-ZIRVESI','EJDER-KUCAGI','YILDIZ-PINARI','GECE-GIRDABI','NEON-IZLEGI',
-  'LAZER-AKINTISI','KRISTAL-FIRTINA','PLAZMA-YOLU','ROKET-AKISI','GIZEMLI-DUMAN',
-  'KOZMIK-CEMBER','ELEKTRIK-SELI','FIRTINA-KAYNAGI','BRONZ-CARPIMI','DEMIR-ATISI',
-  'ALEV-CARPAN','GUMUS-GECESI','PAMUK-YILDIZI','PURPURA-GUNDUZ','SICAK-AKIN',
-  'DONMUS-DERINLIK','UZAY-YANARDAGI','SEKER-DENIZI','TURBO-GIRDABI','TITAN-DALGASI',
-  'ELMAS-UCAN','KARANLIK-DANS','PARLAK-SAVASC','SISLI-CENGE','ATES-YIKICI',
-  'BUZLU-SALDIRI','KARTAL-CILGINI','ASLAN-MUCAHIT','EJDER-EFENDISI','YILDIZ-AVCISI'
-];
-
-async function getAvailableRoomName() {
-  const snap = await db.ref('rooms').once('value');
-  const existing = snap.val() || {};
-  const activeNames = new Set(Object.keys(existing));
-  const available = ROOM_NAMES.filter(n => !activeNames.has(n));
-  if (available.length === 0) return ROOM_NAMES[Math.floor(Math.random() * ROOM_NAMES.length)] + '-' + Math.floor(Math.random()*99);
-  return available[Math.floor(Math.random() * available.length)];
+function startBattle() {
+    const char = CHARACTERS.find(c => c.id === gameState.selectedChar);
+    document.getElementById('player-emoji').textContent = char.emoji;
+    document.getElementById('player-name-tag').textContent = `${char.name} (LVL ${gameState.levels[char.id]})`;
+    showScreen('screen-game');
 }
 
-function selectTarget(val, btn) {
-  targetScore = val;
-  document.querySelectorAll('.score-opt').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-}
-
-async function refreshRooms() {
-  const list = document.getElementById('rooms-list');
-  list.innerHTML = '<div class="room-empty">YÜKLENİYOR...</div>';
-  const snap = await db.ref('rooms').once('value');
-  const all = snap.val() || {};
-  const open = [];
-  Object.entries(all).forEach(([code, data]) => {
-    if (data.status === 'lobby') {
-      const players = data.players || {};
-      const onlinePlayers = Object.values(players).filter(p => p.online !== false);
-      if (onlinePlayers.length > 0 && onlinePlayers.length < MAX_PLAYERS) {
-        open.push({ code, count: onlinePlayers.length, players: onlinePlayers });
-      }
-    }
-  });
-  list.innerHTML = '';
-  if (open.length === 0) { list.innerHTML = '<div class="room-empty">ŞU AN AÇIK ODA YOK</div>'; return; }
-  open.forEach(r => {
-    const avatars = r.players.slice(0,4).map(p => getAvatarSvg(p.avatar,'18px')).join('');
-    const div = document.createElement('div');
-    div.className = 'room-item';
-    div.innerHTML = `
-      <div>
-        <div class="room-code-text">${r.code}</div>
-        <div class="room-info">${avatars} &nbsp;${r.count}/${MAX_PLAYERS} OYUNCU</div>
-      </div>
-      <button class="btn-join-sm" onclick="quickJoin('${r.code}')">KATIL →</button>`;
-    list.appendChild(div);
-  });
-}
-
-function quickJoin(code) {
-  joinRoom(code);
-}
-
-refreshRooms();
-
-function validatePlayerInfo() {
-  const name = document.getElementById('input-name').value.trim();
-  const err = document.getElementById('join-error');
-  err.textContent = '';
-  if (!name) { err.textContent = '✕ İSİM GİRMEDEN DEVAM EDEMEZSİN'; return false; }
-  if (!myAvatar) { err.textContent = '✕ BİR AVATAR SEÇMELİSİN'; return false; }
-  return true;
-}
-
-async function createRoom() {
-  if (!validatePlayerInfo()) return;
-  const name = document.getElementById('input-name').value.trim();
-  const err = document.getElementById('join-error');
-  try {
-    myId = 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-    myName = name;
-    roomCode = await getAvailableRoomName();
-    roomRef = db.ref('rooms/' + roomCode);
-
-    const players = {};
-    players[myId] = { name: myName, avatar: myAvatar, score: 0, online: true };
-    await roomRef.set({ players, status: 'lobby', round: 0, hostId: myId, targetScore: null });
-    roomRef.child('players/' + myId + '/online').onDisconnect().set(false);
-
-    document.getElementById('score-bar').classList.add('visible');
-    document.getElementById('lobby-code').textContent = roomCode;
-    showScreen('screen-lobby');
-    listenRoom();
-  } catch(e) {
-    err.textContent = '✕ ODA OLUŞTURULAMADI, TEKRAR DENE';
-    myId = null; roomRef = null; roomCode = '';
-  }
-}
-
-async function joinRoom(code) {
-  if (!validatePlayerInfo()) return;
-  const name = document.getElementById('input-name').value.trim();
-  const err = document.getElementById('join-error');
-
-  myId = 'p_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-  myName = name;
-  roomCode = code;
-  roomRef = db.ref('rooms/' + roomCode);
-
-  const snap = await roomRef.once('value');
-  const data = snap.val();
-
-  if (!data) { err.textContent = '✕ ODA BULUNAMADI'; myId = null; roomRef = null; return; }
-  if (data.status === 'playing') { err.textContent = '✕ ODA OYUN OYNUYOR'; myId = null; roomRef = null; return; }
-
-  const rawPlayers = data.players || {};
-  const players = {};
-  Object.keys(rawPlayers).forEach(k => { if (rawPlayers[k].online !== false) players[k] = rawPlayers[k]; });
-  const onlineCount = Object.keys(players).length;
-  if (onlineCount >= MAX_PLAYERS) { err.textContent = `✕ ODA DOLU (MAKS ${MAX_PLAYERS})`; myId = null; roomRef = null; return; }
-
-  players[myId] = { name: myName, avatar: myAvatar, score: 0, online: true };
-  try {
-    await roomRef.child('players').update({ [myId]: players[myId] });
-    roomRef.child('players/' + myId + '/online').onDisconnect().set(false);
-    document.getElementById('score-bar').classList.add('visible');
-    document.getElementById('lobby-code').textContent = roomCode;
-    showScreen('screen-lobby');
-    listenRoom();
-  } catch(e) {
-    document.getElementById('join-error').textContent = '✕ ODAYA GİRİLEMEDİ, TEKRAR DENE';
-    myId = null; roomRef = null; roomCode = '';
-  }
-}
-
-function listenRoom() {
-  if (roomListener) roomRef.off('value', roomListener);
-  roomListener = roomRef.on('value', snap => {
-    const data = snap.val();
-    if (!data) { resetLocalState(); showScreen('screen-join'); refreshRooms(); return; }
-
-    const players = data.players || {};
-    const onlineKeys = Object.keys(players).filter(k => players[k].online !== false);
-
-    if (onlineKeys.length === 0) {
-      roomRef.off();
-      roomRef.remove();
-      resetLocalState();
-      showScreen('screen-join');
-      refreshRooms();
-      return;
-    }
-
-    if (data.hostId && players[data.hostId] && players[data.hostId].online === false) {
-      if (onlineKeys[0] === myId) roomRef.update({ hostId: myId });
-    }
-
-    updateScoreBar(players, data.targetScore);
-
-    if (data.status === 'lobby') {
-      renderLobby(data);
-    } else if (data.status === 'playing') {
-      const choices = data.choices || {};
-      const currentRound = data.round || 0;
-
-      // Yeni tur başladıysa myChosenId'yi sıfırla
-      if (currentRound !== lastSeenRound) {
-        lastSeenRound = currentRound;
-        myChosenId = null;
-      }
-
-      // choices sadece online oyuncular için var, sadece onları kontrol et
-      const choiceKeys = Object.keys(choices);
-      const allChose = choiceKeys.length > 0 && choiceKeys.every(k => choices[k] && choices[k] !== false);
-      if (allChose && !isResolvingRound) {
-        // Sadece en küçük ID'li online oyuncu sonucu hesaplar
-        const sortedKeys = onlineKeys.slice().sort();
-        if (sortedKeys[0] === myId) {
-          isResolvingRound = true;
-          resolveRound(data).finally(() => { isResolvingRound = false; });
-        }
-        // Diğerleri result Firebase'den gelince görecek — burada dur
-      } else if (!allChose) {
-        // Henüz herkes seçmedi — seçim/bekleme ekranı göster
-        renderPick(data);
-      }
-      // allChose && isResolvingRound: zaten hesaplanıyor, bekle
-    } else if (data.status === 'result') {
-      renderResult(data);
-    }
-  });
-}
-
-function renderLobby(data) {
-  const players = data.players || {};
-  const keys = Object.keys(players);
-  const onlinePlayerKeys = keys.filter(k => players[k].online !== false);
-  const list = document.getElementById('lobby-players');
-  list.innerHTML = '';
-  onlinePlayerKeys.forEach(k => {
-    const p = players[k];
-    const div = document.createElement('div');
-    div.className = 'player-item';
-    div.innerHTML = `${getAvatarSvg(p.avatar,'28px')}<span style="margin-left:6px">${p.name}</span>${k === myId ? '<span style="margin-left:auto;font-size:0.6rem;color:#555;letter-spacing:1px">SEN</span>' : ''}`;
-    list.appendChild(div);
-  });
-  for (let i = onlinePlayerKeys.length; i < MAX_PLAYERS; i++) {
-    const div = document.createElement('div');
-    div.className = 'player-item waiting-slot';
-    div.innerHTML = `<span style="font-size:0.65rem;letter-spacing:2px">— BEKLENİYOR</span>`;
-    list.appendChild(div);
-  }
-  const btn = document.getElementById('btn-start');
-  const isHost = (data.hostId === myId) || (!data.hostId && onlinePlayerKeys[0] === myId);
-  btn.disabled = !isHost || onlinePlayerKeys.length < 2;
-  btn.textContent = isHost ? (onlinePlayerKeys.length < 2 ? 'EN AZ 2 OYUNCU GEREKLİ' : `OYUNU BAŞLAT (${onlinePlayerKeys.length} KİŞİ)`) : 'ODA SAHİBİ BAŞLATACAK...';
-  const tss = document.getElementById('target-select-section');
-  if (tss) tss.style.display = isHost ? 'block' : 'none';
-  const existingLbl = document.getElementById('target-info-label');
-  if (existingLbl) existingLbl.remove();
-  if (!isHost && data.targetScore) {
-    const lbl = document.createElement('div');
-    lbl.id = 'target-info-label';
-    lbl.style.cssText = 'font-size:0.65rem;color:#555;letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;';
-    lbl.textContent = `🏆 HEDEF: ${data.targetScore} PUAN`;
-    document.getElementById('lobby-players').before(lbl);
-  }
-  showScreen('screen-lobby');
-}
-
-async function startGame() {
-  if (!roomRef) return;
-  const snap = await roomRef.once('value');
-  const data = snap.val();
-  if (!data) return;
-  const players = data.players || {};
-  const onlineKeys = Object.keys(players).filter(k => players[k].online !== false);
-  if (onlineKeys.length < 2) return;
-  const choices = {};
-  onlineKeys.forEach(k => { choices[k] = false; });
-  await roomRef.update({ status: 'playing', choices, round: (data.round || 0) + 1, targetScore });
-}
-
-function renderPick(data) {
-  const choices = data.choices || {};
-  const myChoice = choices[myId];
-  const players = data.players || {};
-  const total = Object.keys(choices).length; // sadece bu turda oynayan (online) oyuncular
-  const done = Object.values(choices).filter(v => v && v !== false).length;
-  const effectiveChoice = (myChoice && myChoice !== false) ? myChoice : myChosenId;
-
-  if (effectiveChoice) {
-    myChosenId = effectiveChoice;
-    ['tas', 'kagit', 'makas'].forEach(id => {
-      const b = document.getElementById('gbtn-' + id);
-      if (b) b.className = 'game-btn' + (myChosenId === id ? ' selected' : '');
-    });
-    const wList = document.getElementById('waiting-players');
-    wList.innerHTML = '';
-    Object.keys(choices).forEach(k => {
-      if (!players[k]) return; // güvenlik kontrolü
-      const did = choices[k] && choices[k] !== false;
-      const div = document.createElement('div');
-      div.className = 'wait-player' + (did ? ' done' : '');
-      div.innerHTML = `${getAvatarSvg(players[k].avatar,'24px')}<span style="margin-left:6px">${players[k].name}</span><span style="margin-left:auto;font-size:0.8rem">${did ? '✓' : '…'}</span>`;
-      wList.appendChild(div);
-    });
-    document.getElementById('waiting-count').textContent = `${done} / ${total} OYUNCU SEÇTİ`;
-    showScreen('screen-waiting');
-  } else {
-    myChosenId = null;
-    ['tas', 'kagit', 'makas'].forEach(id => {
-      const b = document.getElementById('gbtn-' + id);
-      if (b) b.className = 'game-btn';
-    });
-    const me = players[myId];
-    document.getElementById('pick-who').innerHTML = me ? `${getAvatarSvg(me.avatar,'32px')} <span style="vertical-align:middle">${me.name.toUpperCase()}</span>` : 'SENİN SIRAN';
-    showScreen('screen-pick');
-  }
-}
-
-async function submitChoice(choiceId) {
-  if (myChosenId || !roomRef || !myId) return;
-  myChosenId = choiceId;
-  if (choiceId === 'tas') Audio.playRock();
-  else if (choiceId === 'kagit') Audio.playPaper();
-  else if (choiceId === 'makas') Audio.playScissors();
-  ['tas', 'kagit', 'makas'].forEach(id => {
-    const b = document.getElementById('gbtn-' + id);
-    if (b) b.className = 'game-btn' + (id === choiceId ? ' selected' : '');
-  });
-  await roomRef.child('choices/' + myId).set(choiceId);
-}
-
-async function resolveRound(data) {
-  if (!roomRef) return;
-  const choices = data.choices;
-  const players = data.players;
-  // Sadece choices içindeki (online) oyuncularla çalış
-  const keys = Object.keys(choices).filter(k => choices[k] && choices[k] !== false);
-  const allKeys = Object.keys(players);
-  const counts = { tas: 0, kagit: 0, makas: 0 };
-  keys.forEach(k => { counts[choices[k]]++; });
-  const used = Object.entries(counts).filter(([, c]) => c > 0);
-
-  let winnerSymbol = null, isDraw = false;
-
-  if (used.length === 0) {
-    // Seçim yok — berabere say (edge case)
-    isDraw = true;
-  } else if (used.length === 1) {
-    isDraw = true;
-  } else if (used.length === 3) {
-    const maxCount = Math.max(...used.map(([, c]) => c));
-    const topSymbols = used.filter(([, c]) => c === maxCount).map(([s]) => s);
-    if (topSymbols.length > 1) isDraw = true;
-    else winnerSymbol = topSymbols[0];
-  } else {
-    const [symA] = used[0];
-    const [symB] = used[1];
-    let classicWinner = null;
-    if (BEATS[symA] === symB) classicWinner = symA;
-    else if (BEATS[symB] === symA) classicWinner = symB;
-    if (!classicWinner) isDraw = true;
-    else winnerSymbol = classicWinner;
-  }
-
-  const winnerKeys = winnerSymbol ? keys.filter(k => choices[k] === winnerSymbol) : ['__none__'];
-  const newPlayers = {};
-  allKeys.forEach(k => {
-    newPlayers[k] = { ...players[k], score: (players[k].score || 0) + (winnerKeys.includes(k) ? 1 : 0) };
-  });
-
-  if (!roomRef) return;
-  await roomRef.update({ status: 'result', lastChoices: choices, lastCounts: counts, winnerSymbol: winnerSymbol || null, winnerKeys, isDraw, players: newPlayers });
-}
-
-function renderResult(data) {
-  const players = data.players || {};
-  const lastChoices = data.lastChoices || {};
-  const lastCounts = data.lastCounts || {};
-  const rawWinnerKeys = Array.isArray(data.winnerKeys) ? data.winnerKeys : Object.values(data.winnerKeys || {});
-  const winnerKeys = rawWinnerKeys.filter(k => k !== '__none__');
-  const winnerSymbol = data.winnerSymbol;
-  const isDraw = data.isDraw;
-  // Sadece online oyuncuları göster
-  const keys = Object.keys(players).filter(k => players[k].online !== false);
-
-  // Oyuncu kartları
-  const rp = document.getElementById('result-players');
-  rp.innerHTML = '';
-  keys.forEach(k => {
-    const gc = GAME_CHOICES[lastChoices[k]] || { emoji: '?', label: '?' };
-    const isWinner = winnerKeys.includes(k);
-    const div = document.createElement('div');
-    div.className = 'result-card-player' + (isWinner ? ' winner' : '');
-    const avatarHtml = isWinner
-      ? `<div class="avatar-win-wrap">${getAvatarSvg(players[k].avatar, '48px')}</div>`
-      : `<div class="rcp-avatar">${getAvatarSvg(players[k].avatar, '32px')}</div>`;
-    div.innerHTML = `${avatarHtml}<div class="rcp-name">${players[k].name}</div><div class="rcp-choice">${gc.emoji}</div>`;
-    rp.appendChild(div);
-  });
-
-  // Özet strip
-  const ss = document.getElementById('summary-strip');
-  ss.innerHTML = '';
-  ['tas', 'kagit', 'makas'].forEach(sym => {
-    const cnt = lastCounts[sym] || 0;
-    if (cnt === 0) return;
-    const gc = GAME_CHOICES[sym];
-    const isWin = sym === winnerSymbol;
-    const div = document.createElement('div');
-    div.className = 'sum-item' + (isWin ? ' win-item' : '');
-    div.innerHTML = `<div class="sum-emoji">${gc.emoji}</div><div class="sum-count">${cnt}x</div><div class="sum-label">${gc.label}${isWin ? ' ★' : ''}</div>`;
-    ss.appendChild(div);
-  });
-
-  const hl = document.getElementById('result-headline');
-  const sub = document.getElementById('result-sub-text');
-
-  if (isDraw) {
-    Audio.playDraw();
-    hl.textContent = 'BERABERE!'; hl.className = 'result-headline draw';
-    sub.textContent = 'KİMSE KAZANAMADI';
-  } else if (winnerKeys.includes(myId)) {
-    Audio.playWin();
-    hl.textContent = 'KAZANDIN!'; hl.className = 'result-headline win';
-    const wLabel = (winnerSymbol && GAME_CHOICES[winnerSymbol]) ? GAME_CHOICES[winnerSymbol].label.toUpperCase() : '';
-    sub.textContent = `${wLabel} KAZANDI — TEBRİKLER!`;
-  } else {
-    const gc = (winnerSymbol && GAME_CHOICES[winnerSymbol]) ? GAME_CHOICES[winnerSymbol] : { label: '' };
-    Audio.playLose();
-    hl.textContent = `${gc.label.toUpperCase()} KAZANDI`; hl.className = 'result-headline lose';
-    const validWinners = winnerKeys.filter(k => players[k]);
-    const winNames = validWinners.map(k => players[k].name.toUpperCase()).join(', ');
-    sub.textContent = `${winNames} PUAN ALDI`;
-  }
-
-  const target = data.targetScore || 7;
-  // Sadece online oyuncular arasında kazanan ara
-  const onlinePlayers = Object.values(players).filter(p => p.online !== false);
-  const champion = onlinePlayers.find(p => (p.score || 0) >= target);
-  if (champion) { renderGameOver(players, target); return; }
-
-  // Sadece host'a TEKRAR OYNA butonu göster
-  const playBtn = document.getElementById('btn-play-again');
-  const waitMsg = document.getElementById('btn-wait-host');
-  const onlineKs = Object.keys(players)
-    .filter(k => players[k] && players[k].online !== false)
-    .sort();
-  // hostId'ye göre kontrol, yoksa en küçük ID host sayılır
-  const isHost = data.hostId ? (data.hostId === myId) : (onlineKs.length > 0 && onlineKs[0] === myId);
-  if (playBtn) playBtn.style.display = isHost ? 'block' : 'none';
-  if (waitMsg) waitMsg.style.display = isHost ? 'none' : 'block';
-
-  showScreen('screen-result');
-}
-
-function renderGameOver(players, target) {
-  const sorted = Object.values(players).filter(p => p.online !== false).sort((a, b) => (b.score || 0) - (a.score || 0));
-  const winner = sorted[0];
-
-  // Fullscreen win overlay göster
-  showWinOverlay(winner, sorted, players);
-}
-
-function showWinOverlay(winner, sorted, players) {
-  const overlay = document.getElementById('win-overlay');
-  document.getElementById('win-overlay-name').textContent = winner.name.toUpperCase() + ' KAZANDI!';
-
-  // Avatar stage - ekranın %50 boyutunda
-  const stage = document.getElementById('win-avatar-stage');
-  stage.innerHTML = '';
-  const svgEl = document.createElement('div');
-  svgEl.style.cssText = 'width:100%;height:100%;';
-  svgEl.innerHTML = AVATAR_SVGS[winner.avatar] || '';
-  const svgNode = svgEl.querySelector('svg');
-  if (svgNode) {
-    svgNode.style.width = '100%';
-    svgNode.style.height = '100%';
-    // Animasyonu sıfırla (reflow trick)
-    svgNode.style.animation = 'none';
-    svgNode.classList.add('champion-' + winner.avatar);
-  }
-  stage.appendChild(svgEl);
-  // Reflow'u zorla — animasyon yeniden başlasın
-  if (svgNode) { void svgNode.offsetWidth; svgNode.style.animation = ''; }
-
-  // Confetti patlaması
-  spawnConfetti();
-
-  // Avatar'a özel overlay teması
-  const avatarThemes = {
-    panda:   { bg: 'radial-gradient(ellipse at center, #1a2a1a 0%, #0a0a0a 70%)' },
-    unicorn: { bg: 'radial-gradient(ellipse at center, #2a0a3a 0%, #0a0008 70%)' },
-    koala:   { bg: 'radial-gradient(ellipse at center, #1a1a2a 0%, #0a0a0a 70%)' },
-    sincap:  { bg: 'radial-gradient(ellipse at center, #2a1a0a 0%, #0a0a00 70%)' },
-    sovalye: { bg: 'radial-gradient(ellipse at center, #0a1a2a 0%, #000a18 70%)' },
-    ejder:   { bg: 'radial-gradient(ellipse at center, #2a0a00 0%, #0a0000 70%)' },
-    samuray: { bg: 'radial-gradient(ellipse at center, #2a0808 0%, #0a0000 70%)' },
-    harry:   { bg: 'radial-gradient(ellipse at center, #0a002a 0%, #000008 70%)' },
-    peri:    { bg: 'radial-gradient(ellipse at center, #2a002a 0%, #080008 70%)' },
-    tavsan:  { bg: 'radial-gradient(ellipse at center, #1a2a0a 0%, #0a0a00 70%)' },
-  };
-  const theme = avatarThemes[winner.avatar] || { bg: 'rgba(0,0,0,0.92)' };
-  overlay.style.background = theme.bg;
-
-  overlay.classList.add('show');
-  Audio.stopBg();
-  Audio.playChampion();
-
-  // Overlay kapandıktan sonra gameover ekranını hazırla
-  overlay._winner = winner;
-  overlay._sorted = sorted;
-  overlay._players = players;
-}
-
-function spawnConfetti() {
-  const colors = ['#F5FF4F','#FF4F0D','#0DFFB0','#ffffff','#ff80ff','#80ffff'];
-  // Eski confettiyi temizle
-  document.querySelectorAll('.confetti-particle').forEach(p => p.remove());
-  for (let i = 0; i < 60; i++) {
-    const p = document.createElement('div');
-    p.className = 'confetti-particle';
-    // position:fixed kullan, body'e ekle — vw/vh doğru çalışsın
-    p.style.position = 'fixed';
-    p.style.left = Math.random() * 100 + 'vw';
-    p.style.top = '-20px';
-    p.style.background = colors[Math.floor(Math.random() * colors.length)];
-    p.style.animationDuration = (1.5 + Math.random() * 3) + 's';
-    p.style.animationDelay = (Math.random() * 2) + 's';
-    p.style.width = (6 + Math.random() * 10) + 'px';
-    p.style.height = (6 + Math.random() * 10) + 'px';
-    p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
-    p.style.zIndex = '9999';
-    p.style.pointerEvents = 'none';
-    document.body.appendChild(p);
-  }
-}
-
-function closeWinOverlay() {
-  const overlay = document.getElementById('win-overlay');
-  overlay.classList.remove('show');
-  document.querySelectorAll('.confetti-particle').forEach(p => p.remove());
-
-  // _onClose hook varsa çalıştır (bot modu)
-  if (overlay._onClose) {
-    const fn = overlay._onClose;
-    overlay._onClose = null;
-    fn();
-    return;
-  }
-
-  // Normal multiplayer gameover
-  const winner = overlay._winner;
-  const sorted = overlay._sorted;
-  if (!winner) return;
-
-  const goEl = document.getElementById('gameover-winner');
-  goEl.innerHTML = getAvatarSvg(winner.avatar, '36px') + `<span style="margin-left:8px">${winner.name.toUpperCase()} KAZANDI!</span>`;
-  const podium = document.getElementById('gameover-podium');
-  podium.innerHTML = '';
-  const medals = ['🥇', '🥈', '🥉'];
-  sorted.forEach((p, i) => {
-    const div = document.createElement('div');
-    div.className = 'podium-row';
-    div.innerHTML = `<span class="podium-rank">${medals[i] || (i+1)+'.'}</span>${getAvatarSvg(p.avatar,'24px')}<span style="letter-spacing:1px;margin-left:6px">${p.name}</span><span class="podium-score">${p.score || 0} PT</span>`;
-    podium.appendChild(div);
-  });
-  // Gameover butonlarını multiplayer moduna geri al
-  const goBtn = document.querySelector('#screen-gameover .btn-yellow');
-  if (goBtn) { goBtn.onclick = restartLobby; goBtn.textContent = 'YENİ OYUN →'; }
-  showScreen('screen-gameover');
-}
-
-async function restartLobby() {
-  if (!roomRef) return;
-  myChosenId = null;
-  lastSeenRound = 0;
-  const snap = await roomRef.once('value');
-  const data = snap.val();
-  if (!data) return;
-  const keys = Object.keys(data.players || {});
-  const onlineKeys = keys.filter(k => data.players[k].online !== false);
-  const sortedOnline = onlineKeys.slice().sort();
-  if (sortedOnline[0] !== myId) return;
-  const resetPlayers = {};
-  keys.forEach(k => { resetPlayers[k] = { ...data.players[k], score: 0 }; });
-  targetScore = 7; // local değişkeni de sıfırla
-  // Lobi hedef seçim butonunu da sıfırla
-  document.querySelectorAll('.score-opt').forEach(b => b.classList.remove('selected'));
-  const defaultBtn = document.querySelector('.score-opt:nth-child(3)');
-  if (defaultBtn) defaultBtn.classList.add('selected');
-  await roomRef.update({ status: 'lobby', players: resetPlayers, choices: {}, round: 0, targetScore: null });
-}
-
-function updateScoreBar(players, targetSc) {
-  const sb = document.getElementById('score-bar');
-  sb.innerHTML = '';
-  Object.values(players).filter(p => p.online !== false).forEach(p => {
-    const cell = document.createElement('div');
-    cell.className = 'score-cell';
-    cell.innerHTML = `<div class="sc-av">${getAvatarSvg(p.avatar, '24px')}</div><div class="sc-nm">${p.name}</div><div class="sc-pt">${p.score || 0}</div>`;
-    sb.appendChild(cell);
-  });
-}
-
-async function playAgain() {
-  if (!roomRef) return;
-  myChosenId = null;
-  lastSeenRound = 0;
-  const snap = await roomRef.once('value');
-  const data = snap.val();
-  if (!data || data.status !== 'result') return;
-  const keys = Object.keys(data.players || {});
-  const onlineKeys = keys.filter(k => data.players[k].online !== false);
-  const sortedOnline = onlineKeys.slice().sort();
-  if (sortedOnline[0] === myId) {
-    const choices = {};
-    // Sadece online oyuncular için choices oluştur (startGame ile tutarlı)
-    onlineKeys.forEach(k => { choices[k] = false; });
-    await roomRef.update({ status: 'playing', choices, round: (data.round || 0) + 1 });
-  }
-}
-
-function resetLocalState() {
-  if (roomRef) roomRef.off();
-  myId = null; myName = ''; myAvatar = null; roomCode = ''; roomRef = null;
-  myChosenId = null; roomListener = null; isResolvingRound = false; lastSeenRound = 0;
-  document.querySelectorAll('.avatar-btn').forEach(b => b.classList.remove('selected'));
-  document.getElementById('score-bar').classList.remove('visible');
-  document.getElementById('input-name').value = '';
-  const roomInput = document.getElementById('input-room');
-  if (roomInput) roomInput.value = '';
-  document.getElementById('join-error').textContent = '';
-  document.querySelectorAll('.confetti-particle').forEach(p => p.remove());
-  const wo = document.getElementById('win-overlay');
-  if (wo) wo.classList.remove('show');
-}
-
-// ═══════════════════════════════════
-// SES MOTORU — Web Audio API
-// ═══════════════════════════════════
-const Audio = (() => {
-  let ctx = null;
-  let bgNode = null, bgGain = null;
-  let muted = false;
-
-  function getCtx() {
-    if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
-    if (ctx.state === 'suspended') ctx.resume();
-    return ctx;
-  }
-
-  // Temel oscillator helper
-  function osc(type, freq, start, dur, vol, destination, detune=0) {
-    const c = getCtx();
-    const o = c.createOscillator();
-    const g = c.createGain();
-    o.type = type;
-    o.frequency.setValueAtTime(freq, c.currentTime + start);
-    o.detune.value = detune;
-    g.gain.setValueAtTime(0, c.currentTime + start);
-    g.gain.linearRampToValueAtTime(vol, c.currentTime + start + 0.01);
-    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + start + dur);
-    o.connect(g); g.connect(destination || c.destination);
-    o.start(c.currentTime + start);
-    o.stop(c.currentTime + start + dur + 0.05);
-  }
-
-  // Noise burst (beyaz gürültü)
-  function noise(start, dur, vol, destination) {
-    const c = getCtx();
-    const buf = c.createBuffer(1, c.sampleRate * dur, c.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-    const src = c.createBufferSource();
-    const g = c.createGain();
-    src.buffer = buf;
-    g.gain.setValueAtTime(vol, c.currentTime + start);
-    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + start + dur);
-    src.connect(g); g.connect(destination || c.destination);
-    src.start(c.currentTime + start);
-  }
-
-  // ── Sesler ──
-
-  // Tıklama / seçim sesi
-  function playClick() {
-    if (muted) return;
-    const c = getCtx();
-    osc('sine', 440, 0, 0.08, 0.3);
-    osc('sine', 660, 0.04, 0.08, 0.2);
-  }
-
-  // Taş seçimi — güçlü darbe
-  function playRock() {
-    if (muted) return;
-    const c = getCtx();
-    const master = c.createGain(); master.gain.value = 0.7; master.connect(c.destination);
-    osc('sawtooth', 120, 0, 0.15, 0.6, master);
-    osc('square', 80, 0, 0.2, 0.5, master);
-    noise(0, 0.12, 0.3, master);
-  }
-
-  // Kağıt seçimi — yumuşak hışırtı
-  function playPaper() {
-    if (muted) return;
-    const c = getCtx();
-    const master = c.createGain(); master.gain.value = 0.6; master.connect(c.destination);
-    noise(0, 0.18, 0.25, master);
-    osc('sine', 320, 0, 0.15, 0.3, master);
-    osc('sine', 480, 0.06, 0.12, 0.2, master);
-  }
-
-  // Makas seçimi — keskin snip
-  function playScissors() {
-    if (muted) return;
-    const c = getCtx();
-    const master = c.createGain(); master.gain.value = 0.6; master.connect(c.destination);
-    osc('square', 900, 0, 0.06, 0.4, master);
-    osc('square', 1200, 0.03, 0.05, 0.35, master);
-    noise(0.01, 0.08, 0.2, master);
-  }
-
-  // Kazanma fanfarı — yükselen arpej
-  function playWin() {
-    if (muted) return;
-    const notes = [523, 659, 784, 1047]; // C E G C
-    notes.forEach((freq, i) => {
-      osc('triangle', freq, i * 0.1, 0.3, 0.4);
-      osc('sine', freq * 2, i * 0.1, 0.25, 0.15);
-    });
-    osc('triangle', 1047, 0.4, 0.5, 0.5);
-  }
-
-  // Kaybetme sesi — inen glissando
-  function playLose() {
-    if (muted) return;
-    const c = getCtx();
-    const o = c.createOscillator();
-    const g = c.createGain();
-    o.type = 'sawtooth';
-    o.frequency.setValueAtTime(400, c.currentTime);
-    o.frequency.exponentialRampToValueAtTime(100, c.currentTime + 0.6);
-    g.gain.setValueAtTime(0.4, c.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.6);
-    o.connect(g); g.connect(c.destination);
-    o.start(c.currentTime); o.stop(c.currentTime + 0.7);
-  }
-
-  // Berabere sesi — belirsiz iki ton
-  function playDraw() {
-    if (muted) return;
-    osc('sine', 440, 0, 0.2, 0.3);
-    osc('sine', 440, 0.25, 0.2, 0.3);
-  }
-
-  // Şampiyon müziği — epik fanfar + davul
-  function playChampion() {
-    if (muted) return;
-    const c = getCtx();
-    const master = c.createGain(); master.gain.value = 0.8; master.connect(c.destination);
-
-    // Arpej
-    const melody = [
-      [523,0],[659,0.15],[784,0.3],[1047,0.45],
-      [784,0.65],[1047,0.8],[1319,0.95],[1047,1.15],[1319,1.3]
-    ];
-    melody.forEach(([f,t]) => {
-      osc('triangle', f, t, 0.25, 0.5, master);
-      osc('sine', f*2, t, 0.2, 0.12, master);
-    });
-
-    // Davul vuruşları
-    const kicks = [0, 0.3, 0.6, 0.9, 1.2];
-    kicks.forEach(t => {
-      const o = c.createOscillator();
-      const g = c.createGain();
-      o.type = 'sine';
-      o.frequency.setValueAtTime(150, c.currentTime + t);
-      o.frequency.exponentialRampToValueAtTime(40, c.currentTime + t + 0.15);
-      g.gain.setValueAtTime(0.8, c.currentTime + t);
-      g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + t + 0.18);
-      o.connect(g); g.connect(master);
-      o.start(c.currentTime + t); o.stop(c.currentTime + t + 0.2);
-      noise(t + 0.01, 0.05, 0.15, master);
-    });
-  }
-
-  // Arka plan müziği — tekrarlayan arcade loop
-  let bgInterval = null;
-  function playBg() {
-    if (muted) return;
-    stopBg();
-    const c = getCtx();
-    bgGain = c.createGain();
-    bgGain.gain.value = 0.12;
-    bgGain.connect(c.destination);
-
-    // Basit 8-bar döngü
-    const pattern = [
-      [220,0],[277,0.25],[330,0.5],[277,0.75],
-      [220,1],[196,1.25],[220,1.5],[246,1.75],
-      [261,2],[330,2.25],[392,2.5],[330,2.75],
-      [261,3],[246,3.25],[220,3.5],[196,3.75],
-    ];
-    const loopDur = 4.0;
-
-    function playLoop(offset) {
-      pattern.forEach(([f,t]) => {
-        osc('triangle', f, offset+t, 0.2, 0.5, bgGain);
-        osc('square', f/2, offset+t, 0.18, 0.15, bgGain);
-      });
-    }
-
-    playLoop(0);
-    bgInterval = setInterval(() => { playLoop(0); }, loopDur * 1000);
-  }
-
-  function stopBg() {
-    if (bgInterval) { clearInterval(bgInterval); bgInterval = null; }
-    if (bgGain) { bgGain.gain.setValueAtTime(bgGain.gain.value, getCtx().currentTime);
-      bgGain.gain.exponentialRampToValueAtTime(0.001, getCtx().currentTime + 0.5); bgGain = null; }
-  }
-
-  function toggleMute() {
-    muted = !muted;
-    if (muted) stopBg();
-    else playBg();
-    return muted;
-  }
-
-  return { playClick, playRock, playPaper, playScissors, playWin, playLose, playDraw, playChampion, playBg, stopBg, toggleMute, isMuted: () => muted };
-})();
-
-// ═══════════════════════════════════
-// BOT OYUNU — Firebase gerektirmez
-// ═══════════════════════════════════
-let botDifficulty = 'kolay';
-let botTargetScore = 7;
-let botMyScore = 0;
-let botBotScore = 0;
-let botMyAvatar = null;
-let botLastMyChoice = null;   // Orta zorluk için
-let botMyChoiceHistory = { tas: 0, kagit: 0, makas: 0 }; // Zor için
-const CHOICES_ARR = ['tas', 'kagit', 'makas'];
-const BOT_AVATARS = ['ejder', 'samuray', 'sovalye', 'harry'];
-
-function selectBotDiff(diff, btn) {
-  botDifficulty = diff;
-  document.querySelectorAll('.bot-diff-btn').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-}
-
-function selectBotTarget(val, btn) {
-  botTargetScore = val;
-  document.querySelectorAll('#bot-score-opts .score-opt').forEach(b => b.classList.remove('selected'));
-  btn.classList.add('selected');
-}
-
-function startBotGame() {
-  if (!validatePlayerInfo()) return;
-  showScreen('screen-bot');
-}
-
-function launchBotGame() {
-  botMyScore = 0; botBotScore = 0;
-  botLastMyChoice = null;
-  botMyChoiceHistory = { tas: 0, kagit: 0, makas: 0 };
-  botMyAvatar = myAvatar;
-
-  // Bot için rastgele avatar seç (oyuncununki dışında)
-  const avail = BOT_AVATARS.filter(a => a !== botMyAvatar);
-  const botAv = avail[Math.floor(Math.random() * avail.length)];
-  window._botAvatar = botAv;
-  window._botName = 'BOT';
-
-  // Skor barını ayarla
-  const bsb = document.getElementById('bot-score-bar');
-  document.getElementById('bsb-my-av').innerHTML = getAvatarSvg(botMyAvatar, '22px');
-  document.getElementById('bsb-my-name').textContent = myName.toUpperCase();
-  document.getElementById('bsb-bot-av').innerHTML = getAvatarSvg(botAv, '22px');
-  document.getElementById('bsb-my-score').textContent = '0';
-  document.getElementById('bsb-bot-score').textContent = '0';
-  bsb.style.display = 'flex';
-
-  // Ana score-bar'ı gizle
-  document.getElementById('score-bar').style.display = 'none';
-
-  showBotPick();
-}
-
-function showBotPick() {
-  // Butonları sıfırla
-  ['tas','kagit','makas'].forEach(id => {
-    const b = document.getElementById('bot-gbtn-' + id);
-    if (b) b.className = 'game-btn';
-  });
-  const me = { name: myName, avatar: botMyAvatar };
-  document.getElementById('bot-pick-who').innerHTML =
-    `${getAvatarSvg(me.avatar,'32px')} <span style="vertical-align:middle">${me.name.toUpperCase()}</span>`;
-  showScreen('screen-bot-pick');
-}
-
-function getBotChoice() {
-  if (botDifficulty === 'kolay') {
-    // Tamamen rastgele
-    return CHOICES_ARR[Math.floor(Math.random() * 3)];
-  } else if (botDifficulty === 'orta') {
-    // Oyuncunun son seçimini yenen seçimi yap
-    if (!botLastMyChoice) return CHOICES_ARR[Math.floor(Math.random() * 3)];
-    // Örn: oyuncu taş seçtiyse, kağıt seç
-    return Object.keys(BEATS).find(k => BEATS[k] === botLastMyChoice)
-           || CHOICES_ARR[Math.floor(Math.random() * 3)];
-  } else {
-    // Zor: oyuncunun en çok seçtiğini yenen seçimi yap
-    const total = botMyChoiceHistory.tas + botMyChoiceHistory.kagit + botMyChoiceHistory.makas;
-    if (total === 0) return CHOICES_ARR[Math.floor(Math.random() * 3)];
-    // En çok seçilen
-    const mostChosen = Object.entries(botMyChoiceHistory)
-      .sort((a,b) => b[1]-a[1])[0][0];
-    // Onu yenen seçimi bul
-    return Object.keys(BEATS).find(k => BEATS[k] === mostChosen)
-           || CHOICES_ARR[Math.floor(Math.random() * 3)];
-  }
-}
-
-function botSubmitChoice(choiceId) {
-  if (choiceId === 'tas') Audio.playRock();
-  else if (choiceId === 'kagit') Audio.playPaper();
-  else if (choiceId === 'makas') Audio.playScissors();
-  // Seçimi işaretle
-  ['tas','kagit','makas'].forEach(id => {
-    const b = document.getElementById('bot-gbtn-' + id);
-    if (b) b.className = 'game-btn' + (id === choiceId ? ' selected' : '');
-  });
-
-  // Geçmişi güncelle
-  botLastMyChoice = choiceId;
-  botMyChoiceHistory[choiceId]++;
-
-  // Bot seçimini hesapla (kısa gecikme ile gerçekçi hissettir)
-  setTimeout(() => {
-    const botChoice = getBotChoice();
-    resolveBotRound(choiceId, botChoice);
-  }, 600);
-}
-
-function resolveBotRound(myChoice, botChoice) {
-  let myWon = false, botWon = false, isDraw = false;
-
-  if (myChoice === botChoice) {
-    isDraw = true;
-  } else if (BEATS[myChoice] === botChoice) {
-    myWon = true; botMyScore++;
-  } else {
-    botWon = true; botBotScore++;
-  }
-
-  // Skor barını güncelle
-  document.getElementById('bsb-my-score').textContent = botMyScore;
-  document.getElementById('bsb-bot-score').textContent = botBotScore;
-
-  // Sonuç ekranını doldur
-  const gc_my = GAME_CHOICES[myChoice];
-  const gc_bot = GAME_CHOICES[botChoice];
-
-  const rp = document.getElementById('bot-result-players');
-  rp.innerHTML = '';
-  // Oyuncu kartı
-  const d1 = document.createElement('div');
-  d1.className = 'result-card-player' + (myWon ? ' winner' : '');
-  d1.innerHTML = `${myWon ? `<div class="avatar-win-wrap">${getAvatarSvg(botMyAvatar,'48px')}</div>` : `<div class="rcp-avatar">${getAvatarSvg(botMyAvatar,'32px')}</div>`}
-    <div class="rcp-name">${myName}</div><div class="rcp-choice">${gc_my.emoji}</div>`;
-  rp.appendChild(d1);
-  // Bot kartı
-  const d2 = document.createElement('div');
-  d2.className = 'result-card-player' + (botWon ? ' winner' : '');
-  d2.innerHTML = `${botWon ? `<div class="avatar-win-wrap">${getAvatarSvg(window._botAvatar,'48px')}</div>` : `<div class="rcp-avatar">${getAvatarSvg(window._botAvatar,'32px')}</div>`}
-    <div class="rcp-name">BOT</div><div class="rcp-choice">${gc_bot.emoji}</div>`;
-  rp.appendChild(d2);
-
-  // Özet strip
-  const ss = document.getElementById('bot-summary-strip');
-  ss.innerHTML = `<div class="sum-item${myWon?' win-item':''}"><div class="sum-emoji">${gc_my.emoji}</div><div class="sum-label">${gc_my.label}${myWon?' ★':''}</div></div>
-    <div class="sum-item" style="font-family:'Bebas Neue';font-size:1.2rem;align-self:center;color:#555">VS</div>
-    <div class="sum-item${botWon?' win-item':''}"><div class="sum-emoji">${gc_bot.emoji}</div><div class="sum-label">${gc_bot.label}${botWon?' ★':''}</div></div>`;
-
-  const hl = document.getElementById('bot-result-headline');
-  const sub = document.getElementById('bot-result-sub');
-  if (isDraw) {
-    Audio.playDraw();
-    hl.textContent = 'BERABERE!'; hl.className = 'result-headline draw';
-    sub.textContent = 'KİMSE KAZANAMADI';
-  } else if (myWon) {
-    Audio.playWin();
-    hl.textContent = 'KAZANDIN!'; hl.className = 'result-headline win';
-    sub.textContent = `${gc_my.label} → ${gc_bot.label} 🏆`;
-  } else {
-    Audio.playLose();
-    hl.textContent = 'BOT KAZANDI!'; hl.className = 'result-headline lose';
-    sub.textContent = `${gc_bot.label} → ${gc_my.label} 😅`;
-  }
-
-  // Oyun bitti mi?
-  if (botMyScore >= botTargetScore || botBotScore >= botTargetScore) {
-    document.getElementById('btn-bot-next').textContent = 'SONUÇLAR →';
-    document.getElementById('btn-bot-next').onclick = showBotGameOver;
-  } else {
-    document.getElementById('btn-bot-next').textContent = 'DEVAM →';
-    document.getElementById('btn-bot-next').onclick = botNextRound;
-  }
-
-  showScreen('screen-bot-result');
-}
-
-function botNextRound() {
-  showBotPick();
-}
-
-function showBotGameOver() {
-  const myWon = botMyScore >= botTargetScore;
-  const winner = myWon ? { avatar: botMyAvatar, name: myName } : { avatar: window._botAvatar, name: 'BOT' };
-  const sorted = myWon
-    ? [{ avatar: botMyAvatar, name: myName, score: botMyScore }, { avatar: window._botAvatar, name: 'BOT', score: botBotScore }]
-    : [{ avatar: window._botAvatar, name: 'BOT', score: botBotScore }, { avatar: botMyAvatar, name: myName, score: botMyScore }];
-  showWinOverlay(winner, sorted, {});
-  // closeWinOverlay sonrası gameover ekranı gösterilecek
-  // Override et
-  const overlay = document.getElementById('win-overlay');
-  overlay._onClose = () => {
-    const goEl = document.getElementById('gameover-winner');
-    goEl.innerHTML = getAvatarSvg(winner.avatar,'36px') + `<span style="margin-left:8px">${winner.name.toUpperCase()} KAZANDI!</span>`;
-    const podium = document.getElementById('gameover-podium');
-    podium.innerHTML = '';
-    const medals = ['🥇','🥈','🥉'];
-    sorted.forEach((p,i) => {
-      const div = document.createElement('div');
-      div.className = 'podium-row';
-      div.innerHTML = `<span class="podium-rank">${medals[i]||'.'}</span>${getAvatarSvg(p.avatar,'24px')}<span style="margin-left:6px">${p.name}</span><span class="podium-score">${p.score} PT</span>`;
-      podium.appendChild(div);
-    });
-    // Gameover butonlarını bot moduna göre ayarla
-    document.querySelector('#screen-gameover .btn-yellow').onclick = () => {
-      launchBotGame(); showBotPick();
-    };
-    document.querySelector('#screen-gameover .btn-yellow').textContent = 'TEKRAR OYNA →';
-    showScreen('screen-gameover');
-  };
-}
-
-function toggleAudio() {
-  const muted = Audio.toggleMute();
-  document.getElementById('mute-btn').textContent = muted ? '🔇 SES' : '🔊 SES';
-}
-
-function quitBotGame() {
-  document.getElementById('bot-score-bar').style.display = 'none';
-  document.getElementById('score-bar').style.display = '';
-  botMyScore = 0; botBotScore = 0;
-  showScreen('screen-join');
-}
-
-async function leaveGame() {
-  const leavingRef = roomRef;
-  const leavingId = myId;
-  resetLocalState();
-  if (leavingRef && leavingId) {
-    try {
-      const snap = await leavingRef.once('value');
-      const data = snap.val();
-      if (data) {
-        const players = data.players || {};
-        await leavingRef.child('players/' + leavingId + '/online').set(false);
-        const remaining = Object.keys(players).filter(k => k !== leavingId && players[k].online !== false);
-        if (remaining.length === 0) await leavingRef.remove();
-        else if (data.hostId === leavingId) await leavingRef.update({ hostId: remaining[0] });
-      }
-    } catch(e) {}
-  }
-  refreshRooms();
-  showScreen('screen-join');
-}
+// Start
+initLobby();
 </script>
 </body>
 </html>
